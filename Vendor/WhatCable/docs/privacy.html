@@ -1,0 +1,669 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>WhatCable: Privacy Policy</title>
+<meta name="description" content="Privacy policy for WhatCable, the macOS menu bar app for USB-C cable diagnostics.">
+
+<link rel="canonical" href="https://www.whatcable.uk/privacy">
+<link rel="icon" href="/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/icon.png">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.whatcable.uk/privacy">
+<meta property="og:title" content="WhatCable: Privacy Policy">
+<meta property="og:description" content="Privacy policy for WhatCable, the macOS menu bar app for USB-C cable diagnostics.">
+<meta property="og:image" content="https://www.whatcable.uk/screenshot.webp">
+
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="WhatCable: Privacy Policy">
+<meta name="twitter:description" content="Privacy policy for WhatCable, the macOS menu bar app for USB-C cable diagnostics.">
+<meta name="twitter:image" content="https://www.whatcable.uk/screenshot.webp">
+
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    color-scheme: light;
+    --ink: #0e1620;
+    --ink-soft: #364152;
+    --muted: #6a7585;
+    --line: #e3e8ef;
+    --line-soft: #eef2f7;
+    --bg: #fafbfc;
+    --panel: #ffffff;
+    --accent: #08768b;
+    --accent-strong: #0a7188;
+    --accent-soft: #e6f4f7;
+    --good: #087348;
+    --warn: #8a5700;
+    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.06);
+    --shadow-md: 0 6px 16px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
+    --shadow-lg: 0 24px 50px rgba(15, 23, 42, 0.18);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  main { flex: 1 0 auto; }
+  footer { flex-shrink: 0; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code, pre { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.9em; }
+  pre { background: var(--line-soft); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; }
+  code { background: var(--line-soft); padding: 1px 6px; border-radius: 5px; }
+  pre code { background: none; padding: 0; }
+
+  .wrap {
+    width: min(720px, calc(100% - 40px));
+    margin: 0 auto;
+  }
+  .wrap-wide {
+    width: min(1120px, calc(100% - 40px));
+    margin: 0 auto;
+  }
+
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(250, 251, 252, 0.85);
+    backdrop-filter: saturate(180%) blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-inner {
+    width: min(1120px, calc(100% - 40px));
+    margin: 0 auto;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .brand:hover { text-decoration: none; }
+  .mark {
+    width: 28px;
+    height: 28px;
+    display: block;
+    border-radius: 7px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+  }
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+  .nav-links a { color: inherit; text-decoration: none; }
+  .nav-links a:hover { color: var(--ink); }
+  .nav .button {
+    padding: 8px 14px;
+    min-height: 36px;
+    font-size: 14px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    border-radius: 8px;
+    font-weight: 600;
+    line-height: 1;
+  }
+  .nav .button.secondary { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+  .nav .button.secondary:hover { border-color: #c8d0db; }
+  .nav .button.accent { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .nav .button.accent:hover { background: var(--accent-strong); }
+
+  main {
+    padding: 48px 0 80px;
+  }
+  h1 {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    margin: 0 0 8px;
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    margin: 0 0 32px;
+  }
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 32px 0 12px;
+    scroll-margin-top: 80px;
+  }
+  h3 {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 24px 0 10px;
+    scroll-margin-top: 80px;
+  }
+  p {
+    margin: 0 0 14px;
+    color: var(--ink-soft);
+  }
+  ul, ol {
+    margin: 0 0 14px;
+    padding-left: 20px;
+    color: var(--ink-soft);
+  }
+  li { margin-bottom: 6px; }
+  blockquote {
+    margin: 18px 0;
+    padding: 12px 18px;
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+    color: var(--ink-soft);
+    border-radius: 0 8px 8px 0;
+  }
+  blockquote p:last-child { margin-bottom: 0; }
+  hr {
+    border: none;
+    border-top: 1px solid var(--line);
+    margin: 32px 0;
+  }
+
+  /* Scrollable wrapper injected by the Eleventy wrapTables transform. */
+  .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 0 20px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+  .table-wrap table { margin: 0; border: none; border-radius: 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14.5px;
+    margin: 0 0 20px;
+  }
+  thead tr {
+    background: var(--line-soft);
+    border-bottom: 2px solid var(--line);
+  }
+  th {
+    text-align: left;
+    padding: 9px 14px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink-soft);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--line-soft); }
+
+  /* Images in post body: markdown renders bare <img> not <figure>, so scope
+     the size constraint and chrome here rather than relying on figure img. */
+  .post-body img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    margin: 20px auto;
+  }
+
+  figure { margin: 20px 0; }
+  figure img {
+    display: block;
+    max-width: 100%;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+  }
+  figcaption {
+    margin-top: 8px;
+    font-size: 13.5px;
+    color: var(--muted);
+  }
+
+  .note {
+    padding: 16px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--ink-soft);
+    font-size: 14.5px;
+    margin-bottom: 14px;
+  }
+  .note strong { color: var(--ink); }
+
+  .pro-badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 600;
+    vertical-align: middle;
+    margin-left: 4px;
+  }
+
+  .faq-section {
+    margin-top: 40px;
+  }
+  .faq-section h2 {
+    margin-bottom: 16px;
+  }
+  .faq-item {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+  .faq-item > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 14px 18px;
+    font-weight: 600;
+    color: var(--ink);
+    position: relative;
+    padding-right: 44px;
+  }
+  .faq-item > summary::-webkit-details-marker { display: none; }
+  .faq-item > summary::after {
+    content: "+";
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    color: var(--muted);
+    transition: transform 0.15s ease;
+  }
+  .faq-item[open] > summary::after {
+    content: "−";
+  }
+  .faq-item > summary:hover {
+    background: var(--line-soft);
+  }
+  .faq-answer {
+    padding: 0 18px 14px;
+    color: var(--ink-soft);
+  }
+  .faq-answer > :last-child { margin-bottom: 0; }
+
+  footer {
+    padding: 32px 0;
+    background: #0c1219;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 13.5px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  footer .wrap-wide {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  footer a { color: rgba(255, 255, 255, 0.85); }
+  footer a:hover { color: #fff; }
+  footer .footer-links { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+  footer .footer-links .sep { color: rgba(255, 255, 255, 0.3); }
+
+  .mobile-nav { display: none; }
+  .mobile-menu summary { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 12px; border: 1px solid #bac5cf; border-radius: 8px; background: white; color: var(--ink); cursor: pointer; font-size: 14px; font-weight: 600; list-style: none; }
+  .mobile-menu summary::-webkit-details-marker { display: none; }
+  .mobile-menu[open] summary { background: #eaf3f5; border-color: #08768b; }
+  .mobile-nav-panel { position: absolute; top: 100%; left: 0; right: 0; padding: 12px 20px 20px; background: #fafbfc; border-bottom: 1px solid var(--line); box-shadow: 0 12px 20px #0c12191a; max-height: calc(100dvh - 64px); overflow-y: auto; overscroll-behavior: contain; }
+  .mobile-nav-panel a { display: flex; align-items: center; min-height: 48px; padding: 10px 14px; border-radius: 7px; color: var(--ink); font-size: 16px; text-decoration: none; }
+  .mobile-nav-panel a:hover { background: #edf2f5; }
+  .mobile-nav-panel a[aria-current="page"] { background: #e3f0f3; color: #075d6e; font-weight: 700; border-left: 3px solid #08768b; }
+  .nav :is(a,summary):focus-visible { outline: 3px solid #08768b; outline-offset: 3px; }
+  @media (max-width: 720px) {
+    .mobile-nav { display: flex; align-items: center; gap: 10px; }
+    .nav-inner { gap: 10px; }
+    .mobile-nav .button.accent { min-height: 44px; background: #08768b; }
+
+    .nav .desktop-nav { display: none; }
+    .nav-links { gap: 12px; }
+    .nav .button { padding: 8px 12px; font-size: 13px; }
+    h1 { font-size: 28px; }
+    h2 { font-size: 20px; }
+    footer .wrap-wide { flex-direction: column; align-items: flex-start; }
+  }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+  footer .wrap-wide > span:first-child a, .price-note a, .pricing-note a, .pricing a, .answer a { text-decoration: underline; text-underline-offset: 3px; }
+  :is(a,button,summary):focus-visible { outline: 3px solid #08768b; outline-offset: 4px; }
+  @media(prefers-reduced-motion:reduce) { html { scroll-behavior: auto; } }
+</style>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://www.whatcable.uk/#website",
+      "url": "https://www.whatcable.uk/",
+      "name": "WhatCable",
+      "publisher": {
+        "@id": "https://www.whatcable.uk/#publisher"
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://www.whatcable.uk/#publisher",
+      "name": "Bitmoor",
+      "url": "https://www.bitmoor.co.uk",
+      "founder": {
+        "@type": "Person",
+        "name": "Darryl"
+      }
+    }
+  ]
+}
+</script>
+
+
+    
+  </head>
+  <body>
+    <nav class="nav" aria-label="Primary">
+  <div class="nav-inner">
+    <a class="brand" href="/">
+      <img class="mark" src="/icon.png" alt="" aria-hidden="true" width="28" height="28">
+      <span>WhatCable</span>
+    </a>
+    <div class="nav-links desktop-nav">
+      
+        <a href="/instructions" data-keep-mobile>Docs</a>
+      
+        <a href="/cli">CLI</a>
+      
+        <a href="/cables">Cables</a>
+      
+        <a href="/blog">Blog</a>
+      
+      
+        <a class="button secondary" href="https://github.com/darrylmorley/whatcable">GitHub</a>
+      
+        <a class="button accent" href="/pro">Get Pro</a>
+      
+    </div>
+    <div class="mobile-nav">
+      <a class="button accent" href="/pro">Get Pro</a>
+      <details class="mobile-menu">
+        <summary aria-controls="mobile-nav-links"><span>Menu</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></summary>
+        <div id="mobile-nav-links" class="mobile-nav-panel">
+          
+            <a href="/instructions">Docs</a>
+          
+            <a href="/cli">CLI</a>
+          
+            <a href="/cables">Cables</a>
+          
+            <a href="/blog">Blog</a>
+          
+          <a href="/inside-a-cable">Inside a cable</a>
+          <a href="/pro">WhatCable Pro</a>
+          <a href="/support">Support</a>
+          <a href="https://github.com/darrylmorley/whatcable">GitHub</a>
+        </div>
+      </details>
+    </div>
+  </div>
+</nav>
+<script>
+(() => {
+  const menu = document.querySelector('.mobile-menu');
+  const trigger = menu.querySelector('summary');
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && menu.open) {
+      menu.open = false; trigger.focus();
+    }
+  });
+  document.addEventListener('click', event => {
+    if (menu.open && !menu.contains(event.target)) menu.open = false;
+  });
+  menu.querySelectorAll('a').forEach(link => link.addEventListener('click', () => { menu.open = false; }));
+  const desktop = matchMedia('(min-width: 721px)');
+  desktop.addEventListener('change', event => { if (event.matches) menu.open = false; });
+})();
+</script>
+
+    <main>
+  <div class="wrap">
+    <h1>Privacy Policy</h1>
+    <p class="subtitle">Last updated: 2026-07-20</p>
+    <p>
+  WhatCable is a small macOS menu bar app that tells you what each USB-C
+  cable plugged into your Mac can actually do. This page explains what
+  data the app handles.
+</p>
+<p>
+  WhatCable is published by Bitmoor Ltd, a company registered in England
+  and Wales under company number 17133695, with its registered office at
+  Unit A478, 4-6 Greatorex Street, London, United Kingdom, E1 5NF.
+  Bitmoor Ltd is the data controller for the limited personal data
+  described below. If you buy WhatCable Pro, the
+  <a href="/terms">terms and conditions</a> also apply.
+</p>
+
+<h2>What WhatCable reads</h2>
+<p>
+  WhatCable reads USB-C port state, USB-PD Discover Identity messages,
+  power source data, and Thunderbolt switch information from your Mac
+  through Apple's IOKit framework. All of this stays on your Mac. It is
+  used only to render the popover you see in the menu bar.
+</p>
+
+<h2>What WhatCable sends</h2>
+<p>
+  WhatCable checks the public
+  GitHub Releases API for a newer version when it starts, every six hours, and when you open the menu if it hasn't checked in the last 30 minutes. That request includes a <code>User-Agent</code> header
+  naming the app and your installed version (for example,
+  <code>WhatCable/1.3.0</code>). It does not include any personal
+  information, and no analytics, telemetry, or identifiers are sent.
+</p>
+<p>
+  If you click "Report this cable", WhatCable opens GitHub in your
+  default browser with the cable's public e-marker fields pre-filled in
+  a new issue. You review the contents and decide whether to submit it.
+  Nothing is sent automatically.
+</p>
+
+<h2>Contributing diagnostic data (opt-in)</h2>
+<p>
+  WhatCable has an optional "Contribute Diagnostic Data" feature, in
+  Settings and the right-click menu. It is off by default and never runs
+  on its own. When you choose to run it, a consent screen explains what
+  will be sent before anything leaves your Mac.
+</p>
+<p>
+  If you proceed, WhatCable runs a set of read-only IOKit probes and sends
+  the results to a WhatCable server to help improve cable, port, and
+  display detection. The submission contains:
+</p>
+<ul>
+  <li>Raw IOKit registry properties: a snapshot of the hardware data macOS
+    publishes about your Mac, including its ports, power, displays and
+    connected accessories.</li>
+  <li>A list of the driver classes present on your Mac.</li>
+  <li>Readings macOS publishes about battery and power, including what the
+    attached charger advertises.</li>
+  <li>Your macOS version, chip type and Mac model identifier (for example,
+    Mac14,3).</li>
+  <li>A one-way SHA-256 hash of your Mac's hardware UUID, used only to
+    group submissions from the same machine. The original UUID is never
+    sent and cannot be recovered from the hash.</li>
+  <li>Your Mac's own identifiers are left out before anything is sent: its
+    serial numbers, hardware UUID, chip ID, its own network and Bluetooth
+    addresses, your home folder path and your user name.</li>
+</ul>
+<p>
+  No names, accounts, your Mac's serial number, or personal data are included.
+  It is the same kind of data visible in System Information. Decline at
+  the consent screen and nothing is sent.
+</p>
+<p>
+  <strong>How contributed data is used.</strong> If you choose to
+  contribute, you grant Bitmoor Ltd a perpetual, worldwide, royalty-free
+  licence to use the submitted data to develop, test and improve WhatCable
+  and related products, including in aggregated or derived form. In
+  practice that means using it to work out how different Macs, cables,
+  docks and displays actually behave, and turning that into better
+  detection and clearer explanations in the app. Because submissions
+  contain no personal data, we cannot link one back to you in order to
+  remove it individually. Contributed diagnostic data is used for research
+  and product development. It is not published, and it is not what feeds
+  the public <a href="/cables">cable database</a>, which is built from
+  cable reports people choose to open publicly on GitHub. The same wording
+  appears in section 16 of the
+  <a href="/terms">terms and conditions</a>.
+</p>
+
+<h2>WhatCable Pro (purchase and licensing)</h2>
+<p>
+  WhatCable Pro is an optional paid upgrade. Buying it and keeping it
+  activated involves some personal data that the free app never touches.
+</p>
+<ul>
+  <li><strong>Purchase.</strong> Payment is handled by Stripe. Your card
+    details and email address are processed by Stripe under
+    <a href="https://stripe.com/privacy">Stripe's privacy policy</a>.
+    WhatCable never sees or stores your card details.</li>
+  <li><strong>Licence delivery.</strong> Your licence key is emailed to the
+    address you bought it with.</li>
+  <li><strong>Activation and validation.</strong> When you activate a key,
+    and once each time the app launches afterwards, WhatCable sends your
+    licence key, your Mac's hardware UUID and its model (for example,
+    Mac14,3) to WhatCable's licensing server
+    to confirm the licence and enforce the two-Mac limit. If the server
+    can't be reached, Pro keeps working offline for up to 30 days.</li>
+  <li><strong>What the licence server stores.</strong> Your licence key,
+    the email you bought it with, and the hardware UUID and model of each
+    Mac the key has been activated on (up to two), so one key can't be used on more
+    machines than allowed.</li>
+  <li><strong>Support.</strong> If you use the support form on the website,
+    it collects the email address and the licence key or Stripe transaction
+    ID you enter, so we can find your purchase and reply.</li>
+</ul>
+<p>
+  Deactivating a licence (in the app, or with
+  <code>whatcable --deactivate</code>) removes the stored key from that Mac.
+  The free app makes none of these calls.
+</p>
+
+<h2>What WhatCable stores</h2>
+<p>
+  WhatCable stores your in-app preferences (display mode, hidden ports,
+  notification toggles, font size) in the standard macOS user defaults
+  system, on your Mac. With WhatCable Pro, your licence key is also stored
+  on your Mac so it doesn't have to be re-entered.
+</p>
+
+<h2>What WhatCable does not do</h2>
+<p>
+  Outside the opt-in diagnostic feature and the Pro purchase and licensing
+  described above, WhatCable does not collect, store, or transmit:
+</p>
+<ul>
+  <li>Personal information (name, email, address, phone number).</li>
+  <li>Account or device identifiers.</li>
+  <li>Browsing or app usage analytics.</li>
+  <li>Information about other apps or files on your Mac.</li>
+  <li>Anything about devices connected to ports WhatCable does not need to read.</li>
+</ul>
+
+<h2>Contact</h2>
+<p>
+  Bug reports and questions go through the public GitHub repository at
+  <a href="https://github.com/darrylmorley/whatcable">github.com/darrylmorley/whatcable</a>.
+</p>
+<p>
+  For privacy questions, or to ask what data we hold about a Pro purchase
+  and have it corrected or deleted, email
+  <a href="mailto:hello@whatcable.uk">hello@whatcable.uk</a> or write to
+  Bitmoor Ltd, Unit A478, 4-6 Greatorex Street, London, United Kingdom,
+  E1 5NF. If you are unhappy with how we have handled your data, you can
+  complain to the UK Information Commissioner's Office at
+  <a href="https://ico.org.uk">ico.org.uk</a>.
+</p>
+
+  </div>
+</main>
+
+    <footer>
+  <div class="wrap-wide">
+    <span>A <a href="https://www.bitmoor.co.uk">Bitmoor</a> product. Founded by <a href="https://github.com/darrylmorley">Darryl</a>. MIT licensed.</span>
+    <span class="footer-links">
+      
+        <a href="/instructions">Docs</a>
+        <span class="sep">·</span>
+      
+        <a href="/cli">CLI</a>
+        <span class="sep">·</span>
+      
+        <a href="/cables">Cables</a>
+        <span class="sep">·</span>
+      
+        <a href="/inside-a-cable">Inside a cable</a>
+        <span class="sep">·</span>
+      
+        <a href="/blog">Blog</a>
+        <span class="sep">·</span>
+      
+        <a href="/pro">Pro</a>
+        <span class="sep">·</span>
+      
+        <a href="/support">Support</a>
+        <span class="sep">·</span>
+      
+        <a href="https://www.bitmoor.co.uk/business.html">Business enquiries</a>
+        <span class="sep">·</span>
+      
+        <a href="/press">Press</a>
+        <span class="sep">·</span>
+      
+        <a href="/privacy">Privacy</a>
+        <span class="sep">·</span>
+      
+        <a href="/terms">Terms</a>
+        <span class="sep">·</span>
+      
+        <a href="https://github.com/darrylmorley/whatcable">View source on GitHub</a>
+        
+      
+    </span>
+  </div>
+</footer>
+
+  </body>
+</html>

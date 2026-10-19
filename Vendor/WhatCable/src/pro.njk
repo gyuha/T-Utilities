@@ -1,0 +1,985 @@
+---
+permalink: /pro.html
+layout: base.njk
+documentTitle: "WhatCable Pro - Deep USB-C Diagnostics for Mac"
+description: "WhatCable Pro helps explain slow charging, display limits and unreliable connections, with the technical detail when you need it. One-time purchase, works on up to 2 Macs."
+ogImage: "https://www.whatcable.uk/screenshot-power-monitor.webp"
+extraHead: |
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": ["SoftwareApplication", "Product"],
+    "@id": "https://www.whatcable.uk/pro#software",
+    "name": "WhatCable Pro",
+    "description": "USB-C diagnostics for Mac. Understand charging power, display connections and port errors, with detailed hardware reports.",
+    "url": "https://www.whatcable.uk/pro",
+    "image": "https://www.whatcable.uk/screenshot-power-monitor.webp",
+    "brand": { "@type": "Brand", "name": "WhatCable" },
+    "offers": {
+      "@type": "Offer",
+      "price": "9.99",
+      "priceCurrency": "GBP",
+      "url": "https://www.whatcable.uk/pro#pricing",
+      "availability": "https://schema.org/InStock",
+      "seller": { "@type": "Person", "name": "Darryl" }
+    },
+    "operatingSystem": "macOS 14+",
+    "applicationCategory": "UtilitiesApplication"
+  }
+  </script>
+  <style>
+    .pro-page img { display: block; max-width: 100%; }
+    .pro-page h1, .pro-page h2, .pro-page h3, .pro-page p { margin: 0; }
+
+    .pro-page .button {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 15px;
+      line-height: 1;
+      cursor: pointer;
+      transition: transform 0.06s ease, background 0.15s ease, border-color 0.15s ease;
+      font-family: inherit;
+      text-decoration: none;
+    }
+    .pro-page .button:active { transform: translateY(1px); }
+    .pro-page .button.primary { background: var(--ink); color: #fff; }
+    .pro-page .button.primary:hover { background: #1c2735; }
+    .pro-page .button.accent { background: var(--accent); color: #fff; }
+    .pro-page .button.accent:hover { background: var(--accent-strong); }
+    .pro-page .button.secondary { background: var(--panel); color: var(--ink); border-color: var(--line); }
+    .pro-page .button.secondary:hover { border-color: #c8d0db; }
+    .pro-page .button.lg { min-height: 52px; padding: 14px 28px; font-size: 16px; border-radius: 10px; }
+
+    .pro-page .hero {
+      padding: 80px 0 72px;
+      position: relative;
+      overflow: hidden;
+      border-bottom: 1px solid var(--line);
+    }
+    .pro-page .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 80% 0%, rgba(12, 140, 166, 0.10), transparent 60%),
+        radial-gradient(ellipse 50% 40% at 20% 100%, rgba(12, 140, 166, 0.06), transparent 60%);
+      pointer-events: none;
+    }
+    .pro-page .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+      gap: 64px;
+      align-items: center;
+      position: relative;
+    }
+    .pro-page .hero-img img {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-md);
+    }
+    .pro-page .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 22px;
+      padding: 6px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--ink-soft);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .pro-page .eyebrow .dot-accent { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+    .pro-page .hero h1 {
+      font-size: clamp(36px, 5vw, 56px);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      font-weight: 800;
+      color: var(--ink);
+      margin-bottom: 20px;
+      max-width: 760px;
+    }
+    .pro-page .hero h1 .accent { color: var(--accent); }
+    .pro-page .hero p.lede {
+      font-size: clamp(17px, 1.4vw, 19px);
+      color: var(--ink-soft);
+      max-width: 580px;
+      margin-bottom: 36px;
+    }
+    .pro-page .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+    .pro-page .price-note { font-size: 13px; color: var(--muted); }
+
+    .pro-page section { padding: 80px 0; }
+    .pro-page .section-tag {
+      display: inline-block;
+      margin-bottom: 14px;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .pro-page .section-head { max-width: 640px; margin-bottom: 48px; }
+    .pro-page .section-head h2 {
+      font-size: clamp(26px, 3.2vw, 36px);
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .pro-page .section-head p { color: var(--ink-soft); font-size: 17px; }
+
+    /* Personas */
+    .pro-page .personas {
+      border-bottom: 1px solid var(--line);
+    }
+    .pro-page .personas-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 24px;
+    }
+    .pro-page .persona-card {
+      padding: 32px 28px;
+      border-radius: 12px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+    }
+    .pro-page .persona-card .persona-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 10px;
+    }
+    .pro-page .persona-card p {
+      font-size: 15px;
+      color: var(--ink-soft);
+      line-height: 1.6;
+    }
+
+    /* Story features */
+    .pro-page .story-features {
+      background: var(--panel);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+    .pro-page .story-feature {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 56px;
+      align-items: center;
+      padding: 56px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .pro-page .story-feature:last-child { border-bottom: none; }
+    .pro-page .story-feature.reverse { direction: rtl; }
+    .pro-page .story-feature.reverse > * { direction: ltr; }
+    .pro-page .story-feature-text {}
+    .pro-page .story-feature-setup {
+      font-size: clamp(20px, 2vw, 26px);
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.25;
+      margin-bottom: 20px;
+      letter-spacing: -0.01em;
+    }
+    .pro-page .story-feature-img img {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-md);
+    }
+    .pro-page .story-feature-name {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    .pro-page .story-feature-explainer {
+      font-size: 16px;
+      color: var(--ink-soft);
+      line-height: 1.6;
+    }
+
+    /* Terminal options */
+    .pro-page .terminal-options { border-bottom: 1px solid var(--line); }
+    .pro-page .terminal-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px; }
+    .pro-page .terminal-card { min-width: 0; }
+    .pro-page .terminal-card h3 { margin-bottom: 12px; font-size: 22px; }
+    .pro-page .terminal-card p { color: var(--ink-soft); line-height: 1.65; margin-bottom: 16px; }
+    .pro-page .terminal-card pre { background: #101b27; color: #e6edf4; padding: 20px; border-radius: 12px; overflow-x: auto; font-size: 14px; line-height: 1.8; }
+    .pro-page .terminal-card figure { margin: 20px 0 0; }
+    .pro-page .terminal-card img { width: 100%; height: auto; display: block; border-radius: 12px; }
+    .pro-page .terminal-card figcaption { margin-top: 10px; color: var(--ink-soft); font-size: 14px; }
+    .pro-page .terminal-guide { margin-top: 24px; }
+    .pro-page .terminal-guide a { text-decoration: underline; text-underline-offset: 3px; }
+    @media (max-width: 760px) { .pro-page .terminal-grid { grid-template-columns: 1fr; } }
+
+    /* Reviews */
+    .pro-page .quotes-strip .quotes-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 20px;
+    }
+    .pro-page .quotes-strip .pull-quote {
+      padding: 24px 26px;
+      border-radius: 12px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin: 0;
+    }
+    .pro-page .quotes-strip .pull-quote .quote {
+      font-size: 16px;
+      line-height: 1.55;
+      font-weight: 500;
+      color: var(--ink);
+      margin: 0;
+    }
+    .pro-page .quotes-strip .pull-quote .attribution {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .pro-page .quotes-strip a.pull-quote { text-decoration: none; }
+    .pro-page .quotes-strip a.pull-quote:hover { border-color: #c8d0db; }
+    .pro-page .quotes-subhead {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink-soft);
+      letter-spacing: 0.02em;
+      margin-bottom: 20px;
+      margin-top: 40px;
+    }
+    @media (max-width: 880px) {
+      .pro-page .quotes-strip .quotes-grid { grid-template-columns: 1fr; }
+      .pro-page .personas-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Smaller screenshot gallery */
+    .pro-page .gallery { display: none; }
+    .pro-page .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    .pro-page .gallery-item { text-align: center; }
+    .pro-page .gallery-item img {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-md);
+    }
+    .pro-page .gallery-item .caption {
+      margin-top: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink-soft);
+    }
+    .pro-page .gallery-item .caption-detail {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .pro-page .features {
+      background: var(--panel);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+    .pro-page .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .pro-page .feature { padding: 28px 24px; background: var(--panel); }
+    .pro-page .feature:nth-child(n+9) { display: none; }
+    .pro-page .feature .icon {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 18px;
+      border-radius: 10px;
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+    .pro-page .feature h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+    .pro-page .feature p { color: var(--ink-soft); font-size: 14.5px; line-height: 1.55; }
+    .pro-page .feature--filler {}
+
+    .pro-page .compare { border-bottom: 1px solid var(--line); }
+    .pro-page .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--panel);
+    }
+    .pro-page .compare-table th {
+      padding: 16px 20px;
+      text-align: left;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      background: var(--bg);
+      border-bottom: 1px solid var(--line);
+      color: var(--ink-soft);
+    }
+    .pro-page .compare-table th.col-pro { color: var(--accent); background: var(--accent-soft); }
+    .pro-page .compare-table td {
+      padding: 14px 20px;
+      font-size: 14.5px;
+      border-bottom: 1px solid var(--line-soft);
+      vertical-align: middle;
+    }
+    .pro-page .compare-table tr:last-child td { border-bottom: none; }
+    .pro-page .compare-table td.col-pro { background: rgba(230, 244, 247, 0.4); }
+    .pro-page .compare-table td.feature-name { color: var(--ink); font-weight: 500; }
+    .pro-page .tick { color: var(--good); display: inline-flex; }
+    .pro-page .cross { color: var(--muted); display: inline-flex; }
+    .pro-page .compare-table .group-header td {
+      background: var(--bg);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .pro-page .pricing { background: var(--panel); border-top: 1px solid var(--line); }
+    .pro-page .pricing-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(360px, 420px);
+      gap: 80px;
+      align-items: center;
+      max-width: 980px;
+    }
+    .pro-page .pricing-layout .section-head { margin-bottom: 0; }
+    .pro-page .pricing-card {
+      max-width: 420px;
+      border: 2px solid var(--accent);
+      border-radius: 16px;
+      padding: 40px;
+      background: var(--panel);
+      box-shadow: var(--shadow-md);
+    }
+    .pro-page .pricing-card .plan-name {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+    .pro-page .pricing-card .price {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .pro-page .pricing-card .price sup { font-size: 24px; font-weight: 700; vertical-align: super; letter-spacing: 0; }
+    .pro-page .pricing-card .price-note { font-size: 14px; color: var(--muted); margin-bottom: 28px; }
+    .pro-page .pricing-card .perks {
+      list-style: none;
+      margin: 0 0 32px;
+      padding: 0;
+      display: grid;
+      gap: 12px;
+    }
+    .pro-page .pricing-card .perks li {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      font-size: 15px;
+      color: var(--ink-soft);
+    }
+    .pro-page .pricing-card .perks svg { color: var(--good); flex-shrink: 0; margin-top: 2px; }
+
+    .pro-page .faq-section { border-top: 1px solid var(--line); }
+    .pro-page .faq-list {
+      max-width: 720px;
+      display: grid;
+      gap: 0;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--panel);
+    }
+    .pro-page .faq-item { border-bottom: 1px solid var(--line); }
+    .pro-page .faq-item:last-child { border-bottom: none; }
+    .pro-page .faq-item summary {
+      padding: 20px 24px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      color: var(--ink);
+    }
+    .pro-page .faq-item summary::-webkit-details-marker { display: none; }
+    .pro-page .faq-item summary::after {
+      content: "+";
+      font-size: 20px;
+      font-weight: 400;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+    .pro-page .faq-item[open] summary::after { content: "−"; }
+    .pro-page .faq-item .answer {
+      padding: 0 24px 20px;
+      color: var(--ink-soft);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .pro-page .cta {
+      background: var(--ink);
+      color: #fff;
+      padding: 80px 0;
+      text-align: center;
+    }
+    .pro-page .cta h2 {
+      font-size: clamp(26px, 3.2vw, 38px);
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 16px;
+      color: #fff;
+    }
+    .pro-page .cta p {
+      color: rgba(255,255,255,0.65);
+      font-size: 17px;
+      margin-bottom: 32px;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .pro-page .cta .button.accent {
+      background: var(--accent);
+      color: #fff;
+      font-size: 16px;
+      min-height: 52px;
+      padding: 14px 32px;
+      border-radius: 10px;
+    }
+    .pro-page .cta .button.accent:hover { background: #0ea5c2; }
+
+    @media (max-width: 860px) {
+      .pro-page .hero-grid { grid-template-columns: 1fr; gap: 40px; }
+      .pro-page .hero-img { max-width: 480px; }
+      .pro-page .feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .pro-page .pricing-layout { grid-template-columns: 1fr; gap: 36px; }
+      .pro-page .story-feature { grid-template-columns: 1fr; gap: 32px; }
+      .pro-page .story-feature.reverse { direction: ltr; }
+      .pro-page .gallery-grid { grid-template-columns: 1fr; max-width: 380px; }
+    }
+    @media (max-width: 600px) {
+      .pro-page .hero h1 { font-size: 28px; }
+      .pro-page .hero p.lede { font-size: 16px; }
+      .pro-page .hero-actions { flex-direction: column; }
+      .pro-page .hero-actions .button { width: 100%; }
+      .pro-page .feature-grid { grid-template-columns: 1fr; }
+      .pro-page .compare-table th, .pro-page .compare-table td { padding: 12px 14px; font-size: 13.5px; }
+      .pro-page .pricing-card { padding: 28px 24px; }
+      .pro-page .cta h2 { font-size: 24px; }
+    }
+  .plain-detail{margin:12px 0 18px}.plain-detail summary{cursor:pointer;font-weight:600;text-decoration:underline;text-underline-offset:3px}.plain-detail summary:focus-visible{outline:2px solid currentColor;outline-offset:4px}.plain-detail p{margin-top:10px}
+
+    .tier-intro { font-size: 15px; color: var(--ink-soft); line-height: 1.7; margin: 20px 0; max-width: 65ch; }
+    .tier-intro span { display: block; }
+    .tier-intro a, .learn-link a { text-decoration: underline; text-underline-offset: 3px; }
+    .skip-link { position: fixed; left: 16px; top: 8px; z-index: 100; padding: 12px 18px; background: white; color: #075d6e; border: 2px solid #075d6e; border-radius: 8px; transform: translateY(-160%); }
+    .skip-link:focus { transform: none; }
+    main:focus { outline: none; }
+
+    main.pro-page { padding: 0; }
+
+    .pro .story-feature-setup, .pro-page .story-feature-setup { font-size: 26px; }
+    .advanced-features { width: min(1120px, calc(100% - 40px)); margin: auto; border: 1px solid var(--line); border-radius: 12px; }
+    .advanced-features > summary { cursor: pointer; font-weight: 700; font-size: 20px; padding: 22px; }
+    .advanced-features > .wrap-wide { padding: 24px 0; }
+    .checkout-feedback { font-size: 14px; line-height: 1.5; flex-basis: 100%; }
+    .checkout-feedback:empty { display: none; }
+    .checkout-retry { padding: 10px 16px; min-height: 44px; border: 1px solid #08768b; border-radius: 8px; background: white; color: #075d6e; font: inherit; cursor: pointer; }
+    .checkout-retry[hidden] { display: none; }
+    .compare-table th.feature-name { text-align: left; font-weight: 500; text-transform: none; letter-spacing: normal; }
+    .compare-table caption { text-align: left; }
+    #compare, #features, [id$="diagnostics"], #charging-agreement { scroll-margin-top: 85px; }
+    .pro-page .hero-actions, .pro .hero-actions { flex-wrap: wrap; }
+  </style>
+---
+<a class="skip-link" href="#main-content">Skip to content</a>
+<main class="pro-page" id="main-content" tabindex="-1">
+
+<!-- 1. HERO -->
+<section class="hero">
+  <div class="wrap-wide hero-grid">
+    <div>
+      <div class="eyebrow">
+        <span class="dot-accent"></span>
+        WhatCable Pro
+      </div>
+      <h1>Find the weak link in your <span class="accent">USB-C setup.</span></h1>
+      <p class="lede">See what the Mac port, cable, dock, adapter and device each support, the speed and power they agreed to use, and where the connection is being limited.</p>
+      <div class="hero-actions">
+        <button class="button accent lg" id="buy-hero">Buy WhatCable Pro for £9.99</button><p class="checkout-feedback" id="buy-hero-status" role="status" aria-live="polite"></p><button type="button" class="checkout-retry" data-retry="buy-hero" hidden>Try checkout again</button>
+        <a href="#features" class="button secondary lg">See what's included</a>
+      </div>
+      <p class="tier-intro"><span><strong>Free:</strong> understand the current connection.</span><span><strong>Pro:</strong> inspect the evidence, watch measurements and investigate changes over time.</span><a href="#compare">Compare Free and Pro</a></p>
+      <p class="price-note">One-time purchase, yours permanently. Two Macs. 14-day refund, no questions asked. macOS 14+ on Apple Silicon.</p>
+    </div>
+    <div class="hero-img">
+      <img src="/screenshot-negotiation-diagnostics.webp" alt="WhatCable Pro Negotiation Diagnostics comparing the Mac port, cable and connected device, with the limiting part highlighted">
+    </div>
+  </div>
+</section>
+
+<!-- 3. THREE FEATURES, STORY-FIRST -->
+<section class="story-features">
+  <div class="wrap-wide">
+
+    <div class="story-feature">
+      <div class="story-feature-text">
+        <div class="story-feature-name">Power Monitor</div>
+        <h2 class="story-feature-setup">Is the power steady, or does it keep dropping?</h2>
+        <p class="story-feature-explainer">Watch the available power readings over time, rather than relying on a single number. Power Monitor shows watts, voltage and current for the selected port, alongside your Mac’s overall power input, so changes are easier to spot.</p>
+      </div>
+      <div class="story-feature-img"><img src="/screenshot-power-monitor.webp" alt="Power Monitor showing 5.9 W at the selected USB-C port, a graph of power, voltage and current, and 42.1 W of overall system power input" loading="lazy"></div>
+    </div>
+
+    <div class="story-feature">
+      <div class="story-feature-text">
+        <div class="story-feature-name">Display Diagnostics</div>
+        <p class="story-feature-setup">Your monitor supports more. Is the adapter holding it back?</p>
+        <p class="story-feature-explainer">Compare what your monitor supports with what the display connection can carry. This example identifies an HDMI adapter and shows that the available connection bandwidth falls short of the monitor’s top mode—giving you a useful place to investigate.</p>
+      </div>
+      <div class="story-feature-img">
+        <img src="/screenshot-display-diagnostics.webp" alt="Display Diagnostics screen showing a monitor's top mode against what the DisplayPort link is carrying, with the adapter named and the shortfall highlighted" loading="lazy">
+      </div>
+    </div>
+
+    <div class="story-feature reverse">
+      <div class="story-feature-text">
+        <div class="story-feature-name">Port Diagnostics</div>
+        <p class="story-feature-setup">The drive keeps dropping out, but never while you are watching.</p>
+        <p class="story-feature-explainer">See the connection events and errors reported by each port. Open the technical details to inspect charging agreements, event messages, individual signal paths and liquid-detection information.</p>
+      </div>
+      <div class="story-feature-img">
+        <img src="/screenshot-diagnostics.webp" alt="Port Diagnostics screen showing port health counters with 27 attaches and 40 VDO failures flagged, liquid detection state, and the live power contract with its active request and the charger's source PDOs" loading="lazy">
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="terminal-options" aria-labelledby="terminal-heading">
+  <div class="wrap-wide">
+    <div class="section-head">
+      <span class="section-tag">CLI &amp; TUI</span>
+      <h2 id="terminal-heading">Prefer the Terminal?</h2>
+      <p>Run a quick check, feed readings into a script, or keep a live dashboard open. Your Pro licence works in the app and Terminal on the same Mac.</p>
+    </div>
+    <div class="terminal-grid">
+      <div class="terminal-card">
+        <h3>CLI: run a check when you need it</h3>
+        <p>The command-line interface gives you connection details with a typed command. <strong>Free includes</strong> basic scans, JSON output for scripts, and watch mode for connection changes.</p>
+        <pre aria-label="Free CLI command examples"><code>whatcable
+whatcable --json
+whatcable --watch</code></pre>
+        <p><strong>Pro adds live power monitoring.</strong> Watch the available readings in Terminal, or stream them as JSON to record and analyse changes in your own tools.</p>
+        <pre aria-label="Pro CLI command examples"><code>whatcable --monitor
+whatcable --monitor-json</code></pre>
+      </div>
+      <div class="terminal-card">
+        <h3>TUI: watch your connections live</h3>
+        <p><strong>Included with Pro.</strong> The text-based user interface is an interactive dashboard inside Terminal. Switch between Overview, Negotiation and Power screens with Tab, and select ports with the arrow keys.</p>
+        <p>Start it with <code>whatcable --dashboard</code>. Press <code>q</code> to quit.</p>
+        <figure>
+          <img src="/screenshot-dashboard-power.webp" width="632" height="551" alt="WhatCable terminal dashboard on its Power screen, showing system charger readings, individual USB-C ports and a live power graph" loading="lazy">
+          <figcaption>The TUI’s Power screen: system input and individual port readings together.</figcaption>
+        </figure>
+      </div>
+    </div>
+    <p class="terminal-guide"><a href="/cli">Read the CLI installation and command guide</a></p>
+  </div>
+</section>
+
+<section class="pricing" id="pricing">
+  <div class="wrap-wide pricing-layout">
+    <div class="section-head">
+      <span class="section-tag">Pricing</span>
+      <h2>Simple, one-time pricing</h2>
+      <p>Unlock every Pro feature on two Macs. No subscription and no recurring charge.</p>
+    </div>
+    <div class="pricing-card">
+      <div class="plan-name">WhatCable Pro</div>
+      <div class="price"><sup>£</sup>9.99</div>
+      <div class="price-note">One-time payment, no subscription</div>
+      <ul class="perks">
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Every Pro feature unlocked immediately</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Yours permanently. No subscription, no renewal.</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Works on up to 2 Macs with one key</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Your key appears on screen the moment you pay, and by email</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>14-day refund, no reason needed</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Keeps working even if we ever retire the licence server</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>30-day offline grace period, no internet needed day to day</li>
+      </ul>
+      <button class="button accent" style="width: 100%; font-size: 16px; min-height: 52px; border-radius: 10px;" id="buy-pricing">Buy WhatCable Pro for £9.99</button><p class="checkout-feedback" id="buy-pricing-status" role="status" aria-live="polite"></p><button type="button" class="checkout-retry" data-retry="buy-pricing" hidden>Try checkout again</button>
+      <p class="price-note" style="margin-top: 14px; text-align: center;">Requires macOS 14 Sonoma or later on Apple Silicon. <a href="/">Download WhatCable Free</a> first if you want to check compatibility.</p>
+      <p class="price-note" style="margin-top: 10px;">Buying a licence means you accept the <a href="/terms">terms and conditions</a>. Need more Macs? Buy additional licences, or ask about <a href="/terms#volume">volume licensing</a> for 10+ Macs.</p>
+      <p class="price-note" style="margin-top: 10px;">Student or educator? Email <a href="mailto:hello@whatcable.uk">hello@whatcable.uk</a> from your academic address for 50% off.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 6. FULL FEATURE TABLE (moved lower) -->
+
+
+<!-- Free vs Pro comparison table -->
+<section id="compare" class="compare">
+  <div class="wrap-wide">
+    <div class="section-head">
+      <span class="section-tag">Free vs Pro</span>
+      <h2>What's in each tier</h2>
+      <p>The free app covers everything most people need. Pro is for engineers, power users, and anyone who wants the full picture.</p>
+    </div>
+    <table class="compare-table"><caption class="sr-only">Features included in WhatCable Free and Pro</caption>
+      <thead>
+        <tr>
+          <th scope="col" style="width: 55%">Feature</th>
+          <th scope="col">Free</th>
+          <th scope="col" class="col-pro">Pro</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="group-header"><td colspan="3">Cable identity</td></tr>
+        <tr><th scope="row" class="feature-name">Cable type (active / passive / optical)</th><td><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td><td class="col-pro"><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td></tr>
+        <tr><th scope="row" class="feature-name">E-marker identity (VID/PID, vendor name)</th><td><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td><td class="col-pro"><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td></tr>
+        <tr><th scope="row" class="feature-name">Speed and power ratings from e-marker</th><td><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td><td class="col-pro"><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td></tr>
+        <tr><th scope="row" class="feature-name">Detailed device and cable identity (VDOs)</th><td><span class="cross"><span class="sr-only">Not included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td><td class="col-pro"><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td></tr>
+        <tr><th scope="row" class="feature-name">Mid-session fault warnings (overcurrent, connection drops)</th><td><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td><td class="col-pro"><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td></tr>
+        <tr><th scope="row" class="feature-name">Cable history (named cables, per-cable timeline and verdict)</th><td><span class="cross"><span class="sr-only">Not included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td><td class="col-pro"><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td></tr>
+        <tr class="group-header"><td colspan="3">Power</td></tr>
+        <tr><th scope="row" class="feature-name">Basic charger info (voltage, wattage)</th><td><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td><td class="col-pro"><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td></tr>
+        <tr><th scope="row" class="feature-name">Live power metering (watts, amps, volts)</th><td><span class="cross"><span class="sr-only">Not included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td><td class="col-pro"><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td></tr>
+        <tr><th scope="row" class="feature-name">Charging agreement (PD profiles and selected request)</th><td><span class="cross"><span class="sr-only">Not included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td><td class="col-pro"><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td></tr>
+        <tr><th scope="row" class="feature-name">Cable resistance estimation</th><td><span class="cross"><span class="sr-only">Not included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td><td class="col-pro"><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td></tr>
+        <tr><th scope="row" class="feature-name">CC advertisement level</th><td><span class="cross"><span class="sr-only">Not included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td><td class="col-pro"><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td></tr>
+        <tr class="group-header"><td colspan="3">Port diagnostics</td></tr>
+        <tr><th scope="row" class="feature-name">Negotiation Diagnostics (Mac port / cable / device breakdown)</th><td><span class="cross"><span class="sr-only">Not included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td><td class="col-pro"><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td></tr>
+        <tr><th scope="row" class="feature-name">Display Diagnostics (monitor top mode vs link)</th><td><span class="cross"><span class="sr-only">Not included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td><td class="col-pro"><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td></tr>
+        <tr><th scope="row" class="feature-name">Connection state and orientation</th><td><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td><td class="col-pro"><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td></tr>
+        <tr><th scope="row" class="feature-name">Thunderbolt link info (gen, lanes, bandwidth)</th><td><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td><td class="col-pro"><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td></tr>
+        <tr><th scope="row" class="feature-name">Port health counters (resets, errors, FET failures)</th><td><span class="cross"><span class="sr-only">Not included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td><td class="col-pro"><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td></tr>
+        <tr><th scope="row" class="feature-name">PD event trace</th><td><span class="cross"><span class="sr-only">Not included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td><td class="col-pro"><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td></tr>
+        <tr><th scope="row" class="feature-name">DP Alt Mode details and EDID</th><td><span class="cross"><span class="sr-only">Not included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td><td class="col-pro"><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td></tr>
+        <tr><th scope="row" class="feature-name">Liquid detection sensor status</th><td><span class="cross"><span class="sr-only">Not included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td><td class="col-pro"><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td></tr>
+        <tr class="group-header"><td colspan="3">App and CLI</td></tr>
+        <tr><th scope="row" class="feature-name">Menu bar app with popover</th><td><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td><td class="col-pro"><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td></tr>
+        <tr><th scope="row" class="feature-name">Desktop widgets (small / medium / large)</th><td><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td><td class="col-pro"><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td></tr>
+        <tr><th scope="row" class="feature-name">JSON output (<code>whatcable --json</code>)</th><td><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td><td class="col-pro"><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td></tr>
+        <tr><th scope="row" class="feature-name">Power monitor window (live charts)</th><td><span class="cross"><span class="sr-only">Not included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td><td class="col-pro"><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td></tr>
+        <tr><th scope="row" class="feature-name">CLI monitor mode (<code>whatcable --monitor</code>)</th><td><span class="cross"><span class="sr-only">Not included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td><td class="col-pro"><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td></tr>
+        <tr><th scope="row" class="feature-name">TUI dashboard (<code>whatcable --dashboard</code>)</th><td><span class="cross"><span class="sr-only">Not included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td><td class="col-pro"><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td></tr>
+        <tr><th scope="row" class="feature-name">Widget power sparkline</th><td><span class="cross"><span class="sr-only">Not included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td><td class="col-pro"><span class="tick"><span class="sr-only">Included</span><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 7. FAQ -->
+<section class="features" id="features">
+<details class="advanced-features"><summary>Explore the detailed Pro tools</summary>
+  <div class="wrap-wide">
+    <div class="section-head">
+      <span class="section-tag">Pro features</span>
+      <h2>More of what Pro can see</h2><p>New to the terms? <a href="/inside-a-cable">Explore our interactive cable diagram</a> to see how charging, data and video use the parts inside a USB-C cable.</p>
+      <p>Every one of these inspects a connection in more detail than the free app can. The full Free and Pro comparison follows below.</p>
+    </div>
+    <div class="feature-grid">
+      <div class="feature">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <h3>Cable history</h3>
+        <p>Name a cable, recognise it on later connections, and keep a timeline of how it performs.</p>
+      </div>
+      <div class="feature">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="4" height="9"/><rect x="10" y="7" width="4" height="13"/><rect x="17" y="3" width="4" height="17"/></svg></div>
+        <h3 id="connection-diagnostics">Negotiation Diagnostics</h3>
+        <p>Find out which part of the connection is holding it back: your Mac’s port, the cable or the connected device.</p>
+<details class="plain-detail"><summary>Technical detail</summary><p>“Negotiated” means the speed or power the connected devices have agreed to use. WhatCable compares this with the reported capabilities of each part, and identifies a limit when the available evidence supports it.</p></details>
+      </div>
+      <div class="feature">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+        <h3 id="display-diagnostics">Display Diagnostics</h3>
+        <p>Find out why your screen is not as sharp or smooth as expected. Compare its picture settings with what the screen and its connection can support.</p>
+<details class="plain-detail"><summary>Technical detail</summary><p>Resolution describes picture detail; refresh rate is how often the picture updates. Display Diagnostics compares these with the monitor’s reported modes and the DisplayPort connection’s lanes and rate. It accounts for Display Stream Compression (DSC), which fits the picture into less bandwidth, and adapter information when available. A lower link rate can be appropriate for the selected picture setting.</p></details>
+      </div>
+      <div class="feature">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+        <h3>Live power metering</h3>
+        <p>See how much power your Mac reports through each port, with readings updated every two seconds.</p>
+<details class="plain-detail"><summary>Technical detail</summary><p>Watts (W) measure power, amps (A) measure current and volts (V) measure voltage. Where live per-port readings are unavailable, WhatCable shows the agreed maximum instead. That limit is not the same as the power being used at that moment.</p></details>
+      </div>
+      <div class="feature">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg></div>
+        <h3 id="charging-agreement">PD contract inspector</h3>
+        <p>See which charging options your charger offers and which one your Mac is using. This helps explain why a powerful charger may be charging at a lower rate.</p>
+<details class="plain-detail"><summary>Technical detail</summary><p>USB Power Delivery (PD) is how compatible devices agree charging power. The agreement is called a power contract. Power Data Objects (PDOs) describe the available charging profiles. The inspector shows voltage, current and available profiles, and flags capability mismatches.</p></details>
+      </div>
+      <div class="feature">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg></div>
+        <h3>Cable resistance estimation</h3>
+        <p>Estimate how much the cable resists the flow of electricity. This can help you investigate power loss while testing a cable.</p>
+<details class="plain-detail"><summary>Technical detail</summary><p>The estimate uses multiple power samples and is shown in milliohms (mΩ), a unit of electrical resistance. It is an estimate, not a direct measurement or proof that a cable is worn.</p></details>
+      </div>
+      <div class="feature">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+        <h3>Port health counters</h3>
+        <p>Look for repeated disconnects, restarts and electrical errors reported by a port. Changes over time can help you investigate an unreliable connection.</p>
+<details class="plain-detail"><summary>Technical detail</summary><p>Counters can include attach/detach events, hard resets, power-role swaps and internal communication or switching errors. A power-role swap changes which device supplies power. These are reported events, not a complete lifetime wear record or proof that the cable caused a fault.</p></details>
+      </div>
+      <div class="feature">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+        <h3>PD event trace</h3>
+        <p>Follow what happened when you connected a cable: the charging setup, any interruptions and the final agreement.</p>
+<details class="plain-detail"><summary>Technical detail</summary><p>The USB Power Delivery event trace shows the protocol messages and events reported for a port, including attachment, contract negotiation and hard resets that restart power negotiation.</p></details>
+      </div>
+      <div class="feature">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+        <h3>DP Alt Mode details</h3>
+        <p>See how the picture travels from your Mac to the screen, along with the display information your Mac can read.</p>
+<details class="plain-detail"><summary>Technical detail</summary><p>DisplayPort Alt Mode carries DisplayPort video through USB-C. The details include lane count (the signal paths in use), link rate (their speed), and whether video travels directly or through a Thunderbolt tunnel. EDID is the monitor’s identity and capabilities data, which can include its model, manufacturer and year.</p></details>
+      </div>
+      <div class="feature">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <h3>Raw VDO identity</h3>
+        <p>Inspect the exact identity data reported by the cable and connected device, beyond the usual summary.</p>
+<details class="plain-detail"><summary>Technical detail</summary><p>Vendor Defined Objects (VDOs) are structured blocks of identity and capability information. SOP addresses the connected device; SOP′ addresses cable electronics. Keeping them separate helps distinguish the device’s claims from the cable’s.</p></details>
+      </div>
+      <div class="feature">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M12 8v4l3 3"/></svg></div>
+        <h3>Liquid detection</h3>
+        <p>Check the liquid-detection state reported for a USB-C port when investigating an intermittent connection.</p>
+<details class="plain-detail"><summary>Technical detail</summary><p>WhatCable displays the available liquid-detection controller state, also called LDCM. This is a report from the Mac’s hardware, not a physical inspection of the port.</p></details>
+      </div>
+      <div class="feature">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+        <h3>Power monitor window</h3>
+        <p>Watch a chart of power and voltage over time while you try a charger or cable. Keep the window open beside your work.</p>
+<details class="plain-detail"><summary>Technical detail</summary><p>The chart shows the available per-port readings. Where the Mac does not provide live power draw, the displayed negotiated maximum is the agreed limit, not measured consumption.</p></details>
+      </div>
+      <div class="feature">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></div>
+        <h3>CLI monitor mode</h3>
+        <p><code>whatcable --monitor</code> streams live power and cable state to your terminal. Pipe it, script it, log it.</p>
+      </div>
+      <div class="feature">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><polyline points="8 21 12 17 16 21"/></svg></div>
+        <h3>TUI dashboard</h3>
+        <p>A live full-screen terminal view of ports, power, and Thunderbolt. Three screens, updates every 2 seconds. For the SSH and tmux crowd: <code>whatcable --dashboard</code>.</p>
+      </div>
+      <div class="feature">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
+        <h3>Widget power sparkline</h3>
+        <p>Desktop widget shows a power chart alongside cable status, updated periodically by macOS on its own schedule. Glance at your desktop and see charging trends without opening anything.</p>
+      </div>
+      <div class="feature">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg></div>
+        <h3>CC advertisement level</h3>
+        <p>Rp current advertisement level with inferred CC line voltage. See what current level your port's pull-up resistor is advertising to attached devices.</p>
+      </div>
+      <div class="feature feature--filler" aria-hidden="true"></div>
+    </div>
+
+    <!-- Smaller gallery of remaining screenshots -->
+    <div class="gallery">
+      <div class="gallery-grid">
+        <div class="gallery-item">
+          <img src="/screenshot-cable-history-graph.webp" alt="Cable history detail showing a named Anker Thunderbolt cable, its rated 40 Gbps reference line, and observed data-speed points over a 30-day window" loading="lazy">
+          <div class="caption">Cable history</div>
+          <div class="caption-detail">Per-cable data-speed timeline against its rated ceiling, 7-day / 30-day / all-time views</div>
+        </div>
+        <div class="gallery-item">
+          <img src="/screenshot-diagnostics.webp" alt="Pro diagnostics screen showing port health counters, liquid detection status, and the negotiated power contract for one port" loading="lazy">
+          <div class="caption">Port Diagnostics</div>
+          <div class="caption-detail">Pin diagram, port health, PD contract, event trace</div>
+        </div>
+        <div class="gallery-item">
+          <img src="/screenshot-dp-altmode.webp" alt="Pro diagnostics screen for a USB-C port driving a display, showing the device identity and a pin diagram with the DP four-lane routing" loading="lazy">
+          <div class="caption">Display Detection</div>
+          <div class="caption-detail">DP lane mapping, expandable device detail, signal routing</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</details>
+</section>
+<!-- 4. REVIEWS -->
+<section class="quotes-strip" aria-label="What reviewers and users said">
+  <div class="wrap-wide">
+    <div class="section-head">
+      <span class="section-tag">Reviews</span>
+      <h2>What reviewers said.</h2>
+    </div>
+    <div class="quotes-grid">
+      <figure class="pull-quote">
+        <blockquote class="quote">A tiny app that does one thing, does it well.</blockquote>
+        <figcaption class="attribution">Dwight Silverman, Houston Chronicle</figcaption>
+      </figure>
+      <a class="pull-quote" href="https://lifehacker.com/tech/whatcable-mac-app" rel="noopener">
+        <blockquote class="quote">WhatCable does a fine job of analyzing the cables attached to your Mac.</blockquote>
+        <span class="attribution">David Nield, Lifehacker</span>
+      </a>
+      <a class="pull-quote" href="https://www.makeuseof.com/this-free-app-tells-me-exactly-what-my-usb-cables-can-do/" rel="noopener">
+        <blockquote class="quote">Finally tells you what your USB-C cables can actually do.</blockquote>
+        <span class="attribution">Brady Snyder, MakeUseOf</span>
+      </a>
+    </div>
+
+    <p class="quotes-subhead">From Pro users</p>
+    <div class="quotes-grid">
+      <figure class="pull-quote">
+        <blockquote class="quote">Clear explanation, no corporate nonsense, and then a new version shipped almost immediately. That is honestly impressive.</blockquote>
+        <figcaption class="attribution">Michal, Creative Producer at ITHEDESIGN</figcaption>
+      </figure>
+      <figure class="pull-quote">
+        <blockquote class="quote">The app is so good, love it.</blockquote>
+        <figcaption class="attribution">Niko Hocke, NIYU</figcaption>
+      </figure>
+      <figure class="pull-quote">
+        <blockquote class="quote">Great software. Great support.</blockquote>
+        <figcaption class="attribution">Alex, Designcooperative Nittenau eG</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- 5. PRICING -->
+
+<section class="faq-section">
+  <div class="wrap-wide">
+    <div class="section-head">
+      <span class="section-tag">FAQ</span>
+      <h2>Common questions</h2>
+    </div>
+    <div class="faq-list">
+      <details class="faq-item">
+        <summary>Does this work on Intel Macs?</summary>
+        <div class="answer">No. WhatCable requires Apple Silicon (M1 or later). The deep IOKit data sources Pro uses are only exposed by Apple's own port controllers, which aren't present on Intel Macs with third-party Thunderbolt chips.</div>
+      </details>
+      <details class="faq-item">
+        <summary>What macOS version do I need?</summary>
+        <div class="answer">macOS 14 Sonoma or later. The free app has the same requirement.</div>
+      </details>
+      <details class="faq-item">
+        <summary>How does activation work?</summary>
+        <div class="answer">After purchase, your licence key arrives by email. Right-click WhatCable in the menu bar, click Licence, paste the key, and pro features unlock immediately. The app validates once on activation and once per launch, with a 30-day offline grace period if you're without internet.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Can I use one key on multiple Macs?</summary>
+        <div class="answer">Yes. One key works on up to 2 Macs. Need more? Buy additional licences, or ask about <a href="/terms#volume">volume licensing</a> for 10+ Macs.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Is the free version still available?</summary>
+        <div class="answer">Yes, always. The free app is open source, on GitHub, and installable via Homebrew. Everything that is free today stays free. Pro adds the deeper diagnostics on top.</div>
+      </details>
+      <details class="faq-item">
+        <summary>What if I need a refund?</summary>
+        <div class="answer"><a href="/support">Get in touch</a> within 14 days of purchase. We'll refund you, no questions asked.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="cta">
+  <div class="wrap-wide">
+    <h2>Find the limit, then fix it.</h2>
+    <p>One-time purchase, yours permanently. Two Macs, every Pro diagnostic unlocked immediately, and a 14-day refund if it isn't for you.</p>
+    <button class="button accent" id="buy-cta">Buy WhatCable Pro for £9.99</button><p class="checkout-feedback" id="buy-cta-status" role="status" aria-live="polite"></p><button type="button" class="checkout-retry" data-retry="buy-cta" hidden>Try checkout again</button>
+  </div>
+</section>
+
+</main>
+
+{% raw %}
+<script>
+  const buyButtons = [
+    document.getElementById("buy-hero"),
+    document.getElementById("buy-pricing"),
+    document.getElementById("buy-cta"),
+  ];
+
+  let checkoutInFlight = false;
+  const labels = new Map(buyButtons.map(button => [button, button.textContent]));
+  async function startCheckout(button) {
+    if (checkoutInFlight) return;
+    checkoutInFlight = true;
+    document.querySelectorAll('.checkout-feedback').forEach(node => { node.textContent = ''; });
+    document.querySelectorAll('.checkout-retry').forEach(node => { node.hidden = true; });
+    const status = document.getElementById(`${button.id}-status`);
+    status.textContent = 'Opening secure checkout…';
+    buyButtons.forEach(node => { node.disabled = true; node.setAttribute('aria-busy', 'true'); node.textContent = 'Opening checkout…'; });
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000);
+    let redirecting = false;
+    try {
+      const response = await fetch('https://whatcable.uk/api/checkout', {method: 'POST', headers: {'Content-Type': 'application/json'}, signal: controller.signal});
+      if (!response.ok) throw new Error(response.status === 429 ? 'Too many attempts. Please wait a moment, then try again.' : 'Checkout could not open. Please try again.');
+      const {url} = await response.json();
+      if (!url) throw new Error('Checkout could not open. Please try again.');
+      const destination = new URL(url);
+      if (destination.protocol !== 'https:') throw new Error('Checkout could not open. Please try again.');
+      window.location.assign(destination.href);
+      redirecting = true;
+    } catch (error) {
+      status.textContent = error.name === 'AbortError' ? 'Checkout took too long to respond. Please try again.' : error instanceof TypeError ? 'Could not connect to checkout. Check your connection and try again.' : error.message;
+      document.querySelector(`[data-retry="${button.id}"]`).hidden = false;
+    } finally {
+      clearTimeout(timer);
+      if (!redirecting) {
+        checkoutInFlight = false;
+        buyButtons.forEach(node => {node.disabled = false; node.removeAttribute('aria-busy'); node.textContent = labels.get(node);});
+      }
+    }
+  }
+  buyButtons.forEach(button => button.addEventListener('click', () => startCheckout(button)));
+  document.querySelectorAll('[data-retry]').forEach(button => button.addEventListener('click', () => startCheckout(document.getElementById(button.dataset.retry))));
+  function revealFeature() {
+    const target = document.getElementById(location.hash.slice(1));
+    const details = target?.closest('.advanced-features');
+    if (details) {details.open = true; target.scrollIntoView();}
+    if (location.hash === '#features') document.querySelector('.advanced-features').open = true;
+  }
+  addEventListener('hashchange', revealFeature); revealFeature();
+</script>
+{% endraw %}

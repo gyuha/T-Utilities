@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+  <title>WhatCable Blog</title>
+  <subtitle>USB-C cables, Thunderbolt, and the deep weeds of port diagnostics.</subtitle>
+  <link href="https://www.whatcable.uk/blog/feed.xml" rel="self" />
+  <link href="https://www.whatcable.uk/blog" />
+  <updated>2026-07-30T00:00:00Z</updated>
+  <id>https://www.whatcable.uk/blog</id>
+  <author>
+    <name>Darryl</name>
+  </author>
+  <entry>
+    <title>Hello, world</title>
+    <link href="https://www.whatcable.uk/blog/hello-world" />
+    <updated>2026-05-20T00:00:00Z</updated>
+    <id>https://www.whatcable.uk/blog/hello-world</id>
+    <content type="html">&lt;p&gt;Welcome to the WhatCable blog.&lt;/p&gt;
+&lt;p&gt;This is where I&#39;ll write about the messy, fun world underneath USB-C: why your
+fast cable charges slowly, what a Thunderbolt 5 cable actually negotiates with
+your Mac, which e-marker fields are honest and which are theatre, and the odd
+counterfeit or quirk that turns up in cable reports.&lt;/p&gt;
+&lt;h2&gt;What you&#39;ll find here&lt;/h2&gt;
+&lt;p&gt;A few rough buckets:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Releases&lt;/strong&gt;: what shipped in the latest WhatCable version, and why.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Deep dives&lt;/strong&gt;: long-form pieces on the spec, the IOKit data, and how the
+app reads it.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Investigations&lt;/strong&gt;: single-cable mysteries, mostly from community reports.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Guides&lt;/strong&gt;: practical &amp;quot;how do I know if X&amp;quot; walkthroughs.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Notes&lt;/strong&gt;: short observations, dev diary entries, posts like this one.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;How to follow along&lt;/h2&gt;
+&lt;p&gt;Drop the &lt;a href=&quot;https://www.whatcable.uk/blog/feed.xml&quot;&gt;Atom feed&lt;/a&gt; into your RSS reader and you&#39;re set. No
+newsletter, no tracking, no comments. If you want to chime in, that&#39;s what
+&lt;a href=&quot;https://github.com/darrylmorley/whatcable/issues&quot;&gt;GitHub issues&lt;/a&gt; are for.&lt;/p&gt;
+</content>
+  </entry>
+  <entry>
+    <title>Why is my MacBook charging so slow? A real diagnosis.</title>
+    <link href="https://www.whatcable.uk/blog/why-is-my-macbook-charging-so-slow" />
+    <updated>2026-05-21T00:00:00Z</updated>
+    <id>https://www.whatcable.uk/blog/why-is-my-macbook-charging-so-slow</id>
+    <content type="html">&lt;p&gt;Slow charging can come from the charger, cable, an intervening dock or the Mac&#39;s current needs. Start by checking those parts rather than assuming the cable needs replacing.&lt;/p&gt;
+&lt;p&gt;In macOS Tahoe 26.4 or later, a &lt;strong&gt;Slow Charger&lt;/strong&gt; message can flag a limited charging source. &lt;a href=&quot;https://support.apple.com/en-gb/102397&quot;&gt;Apple&#39;s charging guide&lt;/a&gt; explains the indicator. It is a useful prompt to investigate, not a diagnosis of a particular faulty component.&lt;/p&gt;
+&lt;h2&gt;1. Check the charger for your exact Mac&lt;/h2&gt;
+&lt;p&gt;Compare the adapter with &lt;a href=&quot;https://support.apple.com/en-gb/109509&quot;&gt;Apple&#39;s recommended charging equipment&lt;/a&gt;. Supplied adapter wattage, fast-charge requirements and the minimum power needed to gain charge under a particular workload are different things.&lt;/p&gt;
+&lt;p&gt;A lower-power adapter may charge the Mac while it is idle yet struggle to keep up during demanding work. On a multi-port charger, plugging in a second device can change the power available. A dock may also provide less power to the laptop than the dock&#39;s own supply rating suggests.&lt;/p&gt;
+&lt;p&gt;For fast charging, use &lt;a href=&quot;https://support.apple.com/en-gb/102378&quot;&gt;Apple&#39;s model-specific combinations&lt;/a&gt;. The charging path matters: for example, Apple lists a 140 W adapter and MagSafe 3 for 16-inch MacBook Pro fast charging, with USB-C fast charging using a 240 W cable supported on November 2023 and later 16-inch models. Do not apply one model&#39;s requirements to every MacBook.&lt;/p&gt;
+&lt;h2&gt;2. Check whether the cable supports the required power&lt;/h2&gt;
+&lt;p&gt;The cable needs to support the intended charging mode. In standard USB-C Power Delivery, a 3 A cable is limited to 60 W at 20 V. A compliant setup must not negotiate 5 A through it.&lt;/p&gt;
+&lt;p&gt;Higher-current cables require an e-marker, the chip that reports their rating. Basic USB 2.0, 3 A cables need not have one. Missing identity data in an app does not prove the chip is absent; macOS may not expose it for that connection.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Technical detail:&lt;/strong&gt; current and voltage both matter. Extended Power Range (EPR) enables higher-voltage charging with compatible equipment. A 240 W cable rating means support for that class of charging; it does not mean the charger or Mac will use 240 W.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://www.whatcable.uk/inside-a-cable&quot;&gt;Explore the power wires and identity chip&lt;/a&gt; to see their different jobs. High charging power and fast data remain separate capabilities.&lt;/p&gt;
+&lt;h2&gt;3. Check battery state before treating low power as a fault&lt;/h2&gt;
+&lt;p&gt;Charging normally changes as the battery fills. Optimised Battery Charging or a configured charge limit can also pause charging. Read the status shown in the battery menu or Battery settings rather than treating any particular percentage as proof of a fault.&lt;/p&gt;
+&lt;p&gt;If macOS offers &lt;strong&gt;Charge to Full Now&lt;/strong&gt;, use it when you need a full battery for an upcoming trip. Otherwise an intentional pause may be doing exactly what you want.&lt;/p&gt;
+&lt;h2&gt;4. Compare the charging agreement with actual use&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;USB Power Delivery is an agreement about available power.&lt;/strong&gt; The source advertises supported options and the Mac requests an option within the setup&#39;s capabilities. The cable constrains which options are permitted.&lt;/p&gt;
+&lt;p&gt;A 20 V, 5 A agreement allows up to 100 W. It does not mean 100 W is continuously entering the battery. Some power runs the computer, conversion has losses, and battery charging can taper or pause.&lt;/p&gt;
+&lt;p&gt;This distinction matters when the Mac is busy. It can consume much of the available power, leaving less for the battery. Compare behaviour during a lighter workload before assuming the charger or cable is failing.&lt;/p&gt;
+&lt;h2&gt;5. Isolate a persistent problem&lt;/h2&gt;
+&lt;p&gt;Try a known-good compatible cable, then a suitable charger or another supported port, changing one thing at a time. If a dock is involved, try a direct connection. These comparisons help narrow the cause; a single successful swap is useful evidence rather than a complete hardware diagnosis.&lt;/p&gt;
+&lt;p&gt;If the connector is damaged, charging repeatedly disconnects or the Mac will not charge, follow &lt;a href=&quot;https://support.apple.com/en-gb/102397&quot;&gt;Apple&#39;s charging troubleshooting guidance&lt;/a&gt;. Avoid scraping inside a port or attempting to repair a damaged cable.&lt;/p&gt;
+&lt;h2&gt;How WhatCable helps&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&quot;https://www.whatcable.uk/&quot;&gt;WhatCable&lt;/a&gt; reads the information your Mac exposes about the port, cable, charger and connection. Where available, it shows the cable rating and negotiated power agreement alongside the system&#39;s power state.&lt;/p&gt;
+&lt;p&gt;That helps answer different questions:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;What is available?&lt;/strong&gt; The charger&#39;s reported capabilities and any dock limits.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;What is permitted?&lt;/strong&gt; The cable&#39;s declared current and voltage rating.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;What was agreed?&lt;/strong&gt; The active charging agreement.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;What is happening now?&lt;/strong&gt; Available power readings and battery or charging status.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;For example, a 60 W agreement with a higher-rated charger warrants a closer look at the cable, charger profiles, port and device request. It does not prove the cable is the limit by itself. Equally, low actual draw beneath a larger agreement can be normal when the battery is nearly full.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://www.whatcable.uk/pro#charging-agreement&quot;&gt;Pro&#39;s charging diagnostics&lt;/a&gt; helps compare the available figures. The purpose is to explain the connection and identify a useful next check, rather than replace a cable on the strength of one number.&lt;/p&gt;
+</content>
+  </entry>
+  <entry>
+    <title>Thunderbolt vs USB-C: what the connector hides</title>
+    <link href="https://www.whatcable.uk/blog/thunderbolt-vs-usb-c" />
+    <updated>2026-05-21T00:00:00Z</updated>
+    <id>https://www.whatcable.uk/blog/thunderbolt-vs-usb-c</id>
+    <content type="html">&lt;p&gt;USB-C tells you whether the plug fits. It does not tell you how quickly files will transfer, which displays will work or how much charging power the connection can provide.&lt;/p&gt;
+&lt;p&gt;Thunderbolt is a connection standard that uses USB-C on generations 3, 4 and 5. A Thunderbolt cable is therefore also a USB-C cable. The useful question is which capabilities the port, cable and connected device share.&lt;/p&gt;
+&lt;h2&gt;Compare the connection standards&lt;/h2&gt;
+&lt;p&gt;These are headline link rates, not promised file-copy speeds. Storage, software and other traffic can reduce the throughput you see.&lt;/p&gt;
+&lt;div class=&quot;table-wrap&quot;&gt;&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Connection&lt;/th&gt;
+&lt;th&gt;Headline data link rate&lt;/th&gt;
+&lt;th&gt;What to check&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;USB 2.0&lt;/td&gt;
+&lt;td&gt;480 Mbps&lt;/td&gt;
+&lt;td&gt;A charging cable may support only this data rate.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;USB 3.2&lt;/td&gt;
+&lt;td&gt;5, 10 or 20 Gbps&lt;/td&gt;
+&lt;td&gt;The exact mode must be supported at both ends.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;USB4, original specification&lt;/td&gt;
+&lt;td&gt;20 or 40 Gbps&lt;/td&gt;
+&lt;td&gt;Check the product&#39;s stated speed and supported features.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;USB4 Version 2.0&lt;/td&gt;
+&lt;td&gt;Up to 80 Gbps; optional 120/40 Gbps asymmetric operation&lt;/td&gt;
+&lt;td&gt;Requires compatible equipment.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Thunderbolt 3&lt;/td&gt;
+&lt;td&gt;Up to 40 Gbps&lt;/td&gt;
+&lt;td&gt;Cable choice and host capabilities matter.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Thunderbolt 4&lt;/td&gt;
+&lt;td&gt;40 Gbps&lt;/td&gt;
+&lt;td&gt;Certification sets requirements beyond headline speed.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Thunderbolt 5&lt;/td&gt;
+&lt;td&gt;80 Gbps; up to 120 Gbps in one direction with Bandwidth Boost&lt;/td&gt;
+&lt;td&gt;Boost reallocates bandwidth; the opposite direction has 40 Gbps.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;In everyday terms:&lt;/strong&gt; the connector is the doorway. The connection standard describes what can travel through it. The actual setup determines what happens on this occasion.&lt;/p&gt;
+&lt;h2&gt;Thunderbolt 4 and 5: what changes?&lt;/h2&gt;
+&lt;p&gt;Thunderbolt 4 retained the 40 Gbps headline rate of Thunderbolt 3 while tightening certification requirements for capabilities such as displays and PCIe data. That makes the specification more predictable, but it does not mean every accessory will run at 40 Gbps or every display combination will work.&lt;/p&gt;
+&lt;p&gt;Thunderbolt 5 increases the link bandwidth. Its Bandwidth Boost mode is particularly useful for demanding displays. &lt;a href=&quot;https://newsroom.intel.com/client-computing/intel-introduces-thunderbolt-5-standard&quot;&gt;Intel&#39;s Thunderbolt 5 announcement&lt;/a&gt; explains both the bandwidth allocation and support for passive cables up to one metre.&lt;/p&gt;
+&lt;p&gt;Display support also depends on the Mac model, dock or adapter, monitor, resolution and refresh rate. A cable cannot add display engines that the computer does not have.&lt;/p&gt;
+&lt;h2&gt;Passive does not mean basic&lt;/h2&gt;
+&lt;p&gt;A passive cable carries high-speed signals without electronics that rebuild or boost those signals. It can still contain an &lt;strong&gt;e-marker&lt;/strong&gt;, the small chip that describes the cable&#39;s declared capabilities.&lt;/p&gt;
+&lt;p&gt;An active cable adds signal-conditioning electronics. That can help signals travel farther, but it does not automatically make the cable faster or more compatible with every connection mode.&lt;/p&gt;
+&lt;p&gt;Thunderbolt cables can be passive or active. Do not infer their construction from the connector, price or generation alone. Check the particular product&#39;s certified capabilities and length.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://www.whatcable.uk/inside-a-cable&quot;&gt;Explore the cable diagram&lt;/a&gt; to compare a basic USB 2.0 cable with passive Thunderbolt 4 and 5 examples. The extra signal paths explain why similar-looking cables can behave differently.&lt;/p&gt;
+&lt;h2&gt;Can a 40 Gbps cable work with newer equipment?&lt;/h2&gt;
+&lt;p&gt;Yes, in an appropriate setup. The &lt;a href=&quot;https://www.usb.org/sites/default/files/2022-10/USB-IF%20USB%2080Gbps%20Announcement_FINAL_v2.pdf&quot;&gt;USB-IF&#39;s USB 80Gbps announcement&lt;/a&gt; describes the newer signalling running over existing 40 Gbps passive USB-C cables as well as newly defined active cables.&lt;/p&gt;
+&lt;p&gt;That does not upgrade a Thunderbolt 4 port beyond its 40 Gbps connection capability. It means a compatible passive cable may carry a newer connection between newer endpoints. It also does not turn the cable&#39;s original certification into Thunderbolt 5 certification.&lt;/p&gt;
+&lt;p&gt;A faster negotiated rate than an older cable label is therefore not, by itself, proof of a dishonest label.&lt;/p&gt;
+&lt;h2&gt;Charging and data speed are separate&lt;/h2&gt;
+&lt;p&gt;Watts describe charging power. Gbps describes data rate. Neither number tells you the other.&lt;/p&gt;
+&lt;p&gt;A 240 W USB-C cable can carry only USB 2.0 data. A fast cable can have a lower power rating. USB Power Delivery support must match across the charger, cable and device; a 240 W rating does not make a Mac draw 240 W.&lt;/p&gt;
+&lt;p&gt;Avoid treating 100 W as a universal ceiling for every Thunderbolt 4 cable. Check the actual cable&#39;s power rating and whether it supports Extended Power Range, the higher-voltage charging mode. Our diagram labels the particular examples being shown.&lt;/p&gt;
+&lt;h2&gt;Compatibility needs more than a matching plug&lt;/h2&gt;
+&lt;p&gt;A USB device connected to a suitable Thunderbolt port normally uses a shared USB mode. A Thunderbolt-only accessory connected to a USB-only port may not work. Some docks offer a USB fallback with fewer features.&lt;/p&gt;
+&lt;p&gt;USB4 and Thunderbolt overlap, but their names are not interchangeable. Check the host and accessory documentation for Thunderbolt compatibility, supported USB modes and display arrangements. Likewise, an eGPU enclosure being Thunderbolt does not make it supported on every Mac.&lt;/p&gt;
+&lt;p&gt;A genuine certification mark is useful evidence. Its absence is not a complete specification, and price alone cannot prove a cable is counterfeit.&lt;/p&gt;
+&lt;h2&gt;Check your own setup&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&quot;https://www.whatcable.uk/&quot;&gt;WhatCable&lt;/a&gt; reads the information macOS exposes about the port, cable and connected equipment. Where available, it compares cable identity with the negotiated link and helps identify which part explains the result.&lt;/p&gt;
+&lt;p&gt;An e-marker reading is a declaration, while a negotiated link rate describes the connection that formed. Neither is a file-transfer benchmark. Missing identity data may simply mean macOS has not exposed a reading for this setup.&lt;/p&gt;
+&lt;p&gt;Use the &lt;a href=&quot;https://www.whatcable.uk/cables&quot;&gt;cable library&lt;/a&gt; to compare reports, or &lt;a href=&quot;https://www.whatcable.uk/pro#connection-diagnostics&quot;&gt;Pro&#39;s connection diagnostics&lt;/a&gt; to examine the available figures across your own connection.&lt;/p&gt;
+</content>
+  </entry>
+  <entry>
+    <title>WhatCable doesn&#39;t just take the cable&#39;s word for it</title>
+    <link href="https://www.whatcable.uk/blog/why-whatcable-checks-the-whole-chain" />
+    <updated>2026-07-17T00:00:00Z</updated>
+    <id>https://www.whatcable.uk/blog/why-whatcable-checks-the-whole-chain</id>
+    <content type="html">&lt;p&gt;A cable is one part of a connection. The Mac port, charger, dock, drive or display also affects the result. WhatCable brings the available information together so that a slow connection does not automatically become a recommendation to buy a new cable.&lt;/p&gt;
+&lt;h2&gt;Start with two different kinds of information&lt;/h2&gt;
+&lt;p&gt;An &lt;strong&gt;e-marker&lt;/strong&gt; is the cable&#39;s digital label. It declares properties such as current rating, data capability and active/passive construction. A &lt;strong&gt;negotiated connection&lt;/strong&gt; is the operating mode established by the connected equipment.&lt;/p&gt;
+&lt;p&gt;These readings answer different questions. A 40 Gbps cable connected to a 10 Gbps drive can reasonably produce a 10 Gbps connection. The drive&#39;s capability explains the result without contradicting the cable&#39;s rating.&lt;/p&gt;
+&lt;p&gt;WhatCable reads what macOS exposes. Availability varies by hardware, connection and system reporting; not every setup exposes every field.&lt;/p&gt;
+&lt;h2&gt;Follow the path through a dock&lt;/h2&gt;
+&lt;p&gt;The cable from the Mac to a dock is not necessarily operating in the same mode as the cable from the dock to a drive. Multiple devices may also share the upstream connection.&lt;/p&gt;
+&lt;p&gt;WhatCable uses available hub and Thunderbolt topology to help distinguish those links. Its diagnostics compares reported capabilities and negotiated results to help identify the part that explains a limit.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://www.whatcable.uk/pro#connection-diagnostics&quot;&gt;Pro&#39;s connection diagnostics&lt;/a&gt; exposes the per-party figures behind the explanation. That makes it easier to understand why changing a cable might help, or why it would leave the same device limit in place.&lt;/p&gt;
+&lt;h2&gt;Cross-check cable identity against the controller report&lt;/h2&gt;
+&lt;p&gt;On supported Thunderbolt or USB4 connections, the Mac&#39;s controller can provide a negotiated link rate in addition to cable identity. WhatCable can compare those sources rather than relying on the label alone.&lt;/p&gt;
+&lt;p&gt;The reported link rate is evidence of the mode the connection established. It is not a sustained file-transfer benchmark, a physical inspection or a guarantee that the link will remain stable under every workload.&lt;/p&gt;
+&lt;p&gt;A lower rate does not by itself disprove a cable&#39;s higher rating. Nor is a higher rate automatically evidence that the cable&#39;s label was dishonest. &lt;a href=&quot;https://www.usb.org/sites/default/files/2022-10/USB-IF%20USB%2080Gbps%20Announcement_FINAL_v2.pdf&quot;&gt;USB-IF describes newer 80 Gbps operation over existing 40 Gbps passive cables&lt;/a&gt;. The interpretation needs to account for the connection generation and cable type.&lt;/p&gt;
+&lt;h2&gt;Charging: distinguish rating, agreement and draw&lt;/h2&gt;
+&lt;p&gt;The charger advertises power options. The cable constrains the permitted current and voltage. The Mac requests a supported operating point. Actual power use can then vary beneath that agreement.&lt;/p&gt;
+&lt;p&gt;A low reading may reflect the battery approaching full charge, an intentional charging pause, a light demand, or a limitation elsewhere in the setup. It is not always a cable fault.&lt;/p&gt;
+&lt;p&gt;WhatCable compares available charging information and system state to help explain these cases. &lt;a href=&quot;https://www.whatcable.uk/pro#charging-agreement&quot;&gt;Pro&#39;s charging view&lt;/a&gt; gives the technical figures, while the &lt;a href=&quot;https://www.whatcable.uk/blog/why-is-my-macbook-charging-so-slow&quot;&gt;charging guide&lt;/a&gt; walks through practical checks.&lt;/p&gt;
+&lt;h2&gt;Displays: check the picture and the path&lt;/h2&gt;
+&lt;p&gt;WhatCable also examines available monitor and display-link reports. These can include the current resolution and refresh rate, monitor capabilities, DisplayPort lane count and rate, and whether the display path goes through Thunderbolt or an adapter.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;EDID&lt;/strong&gt; is the monitor&#39;s description of its capabilities. It is one source of information; WhatCable also uses available macOS mode information. &lt;strong&gt;DSC&lt;/strong&gt;, or Display Stream Compression, can allow a demanding display mode to fit within less link bandwidth than an uncompressed calculation suggests.&lt;/p&gt;
+&lt;p&gt;A lower DisplayPort link rate alone does not establish a poor cable. The selected display mode, Mac capabilities, adapter and compression can all affect the interpretation. A Thunderbolt tunnel is useful context, but it is not a universal promise that every monitor mode will fit.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://www.whatcable.uk/pro#display-diagnostics&quot;&gt;Pro&#39;s display diagnostics&lt;/a&gt; helps compare the reported picture and link instead of treating a single bandwidth figure as the answer.&lt;/p&gt;
+&lt;h2&gt;What a report can establish&lt;/h2&gt;
+&lt;p&gt;Inconsistent identity fields or repeated connection drops can be reasons to investigate. They are not, on their own, proof of counterfeit hardware. A missing or unrecognised manufacturer identifier alone does not make a cable faulty.&lt;/p&gt;
+&lt;p&gt;Likewise, a successful connection is evidence about that setup. It does not inspect conductor thickness, certify safe operation at every claimed power level or authenticate the product. Physical construction and electrical performance require appropriate hardware inspection and testing.&lt;/p&gt;
+&lt;p&gt;The useful outcome is a supported explanation and a sensible next step: change the selected display mode, investigate a dock, compare another port, or try a suitable cable when the evidence points there.&lt;/p&gt;
+&lt;p&gt;For a visual explanation of what the cable contributes, &lt;a href=&quot;https://www.whatcable.uk/inside-a-cable&quot;&gt;look inside the cable diagram&lt;/a&gt;. To compare community identity reports, visit the &lt;a href=&quot;https://www.whatcable.uk/cables&quot;&gt;cable library&lt;/a&gt;.&lt;/p&gt;
+</content>
+  </entry>
+  <entry>
+    <title>How to tell if a USB-C cable is Thunderbolt</title>
+    <link href="https://www.whatcable.uk/blog/is-my-usb-c-cable-thunderbolt" />
+    <updated>2026-07-30T00:00:00Z</updated>
+    <id>https://www.whatcable.uk/blog/is-my-usb-c-cable-thunderbolt</id>
+    <content type="html">&lt;p&gt;You cannot reliably identify a cable&#39;s capabilities from its USB-C plugs. Start with the product information, then compare it with what your Mac can report.&lt;/p&gt;
+&lt;p&gt;There are three useful sources of evidence. Each answers a different question.&lt;/p&gt;
+&lt;h2&gt;1. Check the markings and product specification&lt;/h2&gt;
+&lt;p&gt;A genuine Thunderbolt mark indicates certification. A speed or wattage marking gives a useful starting point, but charging power and data speed are separate ratings.&lt;/p&gt;
+&lt;p&gt;Look up the exact model and length, rather than assuming every cable from a brand is identical. Check data rate, charging rating, active or passive construction, and any compatibility restrictions.&lt;/p&gt;
+&lt;p&gt;A missing mark does not prove a cable is incapable. A printed mark alone cannot authenticate the product either. Keep the packaging or purchase record if you need to identify the precise model.&lt;/p&gt;
+&lt;h2&gt;2. Check the connection in System Information&lt;/h2&gt;
+&lt;p&gt;On a Mac, open System Information and look under &lt;strong&gt;Thunderbolt/USB4&lt;/strong&gt; and &lt;strong&gt;USB&lt;/strong&gt;, as appropriate for the connected device. The names can vary with the Mac and macOS version.&lt;/p&gt;
+&lt;p&gt;This helps answer: &lt;strong&gt;what connection has formed?&lt;/strong&gt; A suitable device needs to be attached at the other end. A cable plugged into an empty port is not a speed test.&lt;/p&gt;
+&lt;p&gt;The result depends on the port, cable and device together. A 10 Gbps drive connected through a faster cable can still report a 10 Gbps connection. That does not establish the cable&#39;s maximum capability.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Technical detail:&lt;/strong&gt; a negotiated link rate is the signalling rate agreed by the connection. It is not the same as sustained file-copy throughput, which also depends on the drive and workload.&lt;/p&gt;
+&lt;h2&gt;3. Read the cable identity with WhatCable&lt;/h2&gt;
+&lt;p&gt;An &lt;strong&gt;e-marker&lt;/strong&gt; is a chip in the plug that reports properties such as current rating, data capability and active/passive construction. Think of it as the cable&#39;s digital label.&lt;/p&gt;
+&lt;p&gt;For standard USB-C to USB-C cable assemblies, full-featured high-speed cables and cables rated for more than 3 A require electronic marking. A basic USB 2.0, 3 A cable need not have it. These rules should not be generalised to every legacy adapter or cable with a USB-C plug at one end.&lt;/p&gt;
+&lt;p&gt;The reading is only available to software when macOS exposes it. The connected equipment and negotiation can affect that. &lt;strong&gt;“No e-marker data” is not the same as “this cable has no e-marker”.&lt;/strong&gt; Connecting appropriate equipment may expose more information, but a charger with a large number printed on it does not guarantee a particular reading.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://www.whatcable.uk/&quot;&gt;WhatCable&lt;/a&gt; brings together the available cable identity and connection information. It can help explain a mismatch without assuming that the cable is the cause.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://www.whatcable.uk/inside-a-cable&quot;&gt;See the e-marker inside the cable diagram&lt;/a&gt;, alongside the wires used for power and data.&lt;/p&gt;
+&lt;h2&gt;Read speed, power and construction separately&lt;/h2&gt;
+&lt;div class=&quot;table-wrap&quot;&gt;&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;What you want to know&lt;/th&gt;
+&lt;th&gt;Useful evidence&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;Can it charge at the required power?&lt;/td&gt;
+&lt;td&gt;Cable power rating, charger capabilities and the Mac&#39;s charging requirements.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Can it carry a fast data link?&lt;/td&gt;
+&lt;td&gt;Cable specification plus compatible endpoints and the negotiated connection.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Is it Thunderbolt certified?&lt;/td&gt;
+&lt;td&gt;The exact product&#39;s certification and manufacturer documentation.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Is it active or passive?&lt;/td&gt;
+&lt;td&gt;The product specification and available identity report.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Is it working well in this setup?&lt;/td&gt;
+&lt;td&gt;Connection behaviour over time, including unexpected drops or changes.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;&lt;/div&gt;
+&lt;p&gt;There is no universal length table that identifies every cable. Construction and supported modes vary between products. Passive Thunderbolt 5 cables are possible: &lt;a href=&quot;https://newsroom.intel.com/client-computing/intel-introduces-thunderbolt-5-standard&quot;&gt;Intel describes support up to one metre&lt;/a&gt;. Longer cables may use active electronics.&lt;/p&gt;
+&lt;p&gt;Nor is an older 40 Gbps passive cable necessarily restricted to 40 Gbps between newer endpoints. &lt;a href=&quot;https://www.usb.org/sites/default/files/2022-10/USB-IF%20USB%2080Gbps%20Announcement_FINAL_v2.pdf&quot;&gt;USB-IF describes support for existing passive cables with newer 80 Gbps signalling&lt;/a&gt;. That is compatible operation, not a new certification for the cable.&lt;/p&gt;
+&lt;h2&gt;Avoid these common misreadings&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;More watts does not mean faster data.&lt;/strong&gt; A 240 W cable may still carry only USB 2.0 data.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;A lower connection speed does not automatically blame the cable.&lt;/strong&gt; Check the device, Mac port and any intervening dock first.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Active does not automatically mean better.&lt;/strong&gt; Active electronics can help with distance, but supported modes still depend on the product.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Price is not an authenticity test.&lt;/strong&gt; Compare the specification and available evidence rather than declaring a product false because it is inexpensive.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;A tidy identity report is not a physical inspection.&lt;/strong&gt; It cannot establish conductor quality or authenticate the product on its own.&lt;/p&gt;
+&lt;h2&gt;Follow the connection through a dock&lt;/h2&gt;
+&lt;p&gt;If a drive sits behind a dock, the Mac-to-dock link and dock-to-drive link may use different rates. Devices can also share upstream bandwidth. A single headline cable speed does not describe the entire path.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://www.whatcable.uk/pro#connection-diagnostics&quot;&gt;Pro&#39;s connection diagnostics&lt;/a&gt; shows the available per-party figures, and WhatCable uses available hub and Thunderbolt topology to help distinguish parts of the chain. The &lt;a href=&quot;https://www.whatcable.uk/cables&quot;&gt;cable library&lt;/a&gt; provides community identity reports for comparison.&lt;/p&gt;
+&lt;p&gt;For the broader background, read &lt;a href=&quot;https://www.whatcable.uk/blog/thunderbolt-vs-usb-c&quot;&gt;Thunderbolt vs USB-C&lt;/a&gt;.&lt;/p&gt;
+</content>
+  </entry>
+</feed>
