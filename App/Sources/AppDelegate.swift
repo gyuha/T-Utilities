@@ -3,7 +3,8 @@ import TUCore
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    private let registry = ModuleRegistry(modules: AppModules.all, store: ModuleStateStore())
+    private let popoverControl = PopoverControl()
+    private lazy var registry = ModuleRegistry(modules: AppModules.all, store: ModuleStateStore(), popover: popoverControl)
     private let permissions = PermissionCenter()
     private var statusItem: StatusItemController?
     private var settingsWindow: SettingsWindowController?
@@ -13,7 +14,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let settingsWindow = SettingsWindowController(registry: registry, permissions: permissions)
         self.settingsWindow = settingsWindow
-        statusItem = StatusItemController(registry: registry) {
+        statusItem = StatusItemController(registry: registry, popoverControl: popoverControl) {
             settingsWindow.show()
         }
 

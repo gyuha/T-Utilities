@@ -126,6 +126,21 @@ struct ModuleRegistryTests {
         #expect(order == ["beta", "alpha"])
     }
 
+    @Test func newlyAddedModuleGetsDefaultButUserChoiceSticks() async {
+        let store = ModuleStateStore(defaults: defaults)
+        let older = ModuleRegistry(modules: [BetaModule.self], store: store)
+        await older.setEnabled(false, for: "beta")
+
+        // A later version adds Alpha (enabled by default). It starts enabled; Beta stays off.
+        let newer = ModuleRegistry(modules: [AlphaModule.self, BetaModule.self], store: store)
+        #expect(newer.enabledIDs == ["alpha"])
+
+        // Once known, disabling Alpha is respected on the next launch.
+        await newer.setEnabled(false, for: "alpha")
+        let relaunched = ModuleRegistry(modules: [AlphaModule.self, BetaModule.self], store: store)
+        #expect(relaunched.enabledIDs.isEmpty)
+    }
+
     @Test func moduleSettingsAreNamespaced() {
         let settings = ModuleSettings(defaults: defaults, moduleID: "alpha")
         settings.set(42, for: "speed")

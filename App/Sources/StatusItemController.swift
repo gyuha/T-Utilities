@@ -12,8 +12,9 @@ final class StatusItemController: NSObject {
     private let openSettings: () -> Void
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let popover = NSPopover()
+    private var keyDownMonitor: Any?
 
-    init(registry: ModuleRegistry, openSettings: @escaping () -> Void) {
+    init(registry: ModuleRegistry, popoverControl: PopoverControl, openSettings: @escaping () -> Void) {
         self.registry = registry
         self.openSettings = openSettings
         super.init()
@@ -33,6 +34,10 @@ final class StatusItemController: NSObject {
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
             button.imagePosition = .imageLeading
         }
+        popoverControl.isShown = { [weak self] in self?.popover.isShown ?? false }
+        popoverControl.show = { [weak self] in self?.showPopover() }
+        popoverControl.close = { [weak self] in self?.popover.performClose(nil) }
+        installKeyDownMonitor()
         observeAppearance()
     }
 
@@ -69,8 +74,34 @@ final class StatusItemController: NSObject {
         if popover.isShown {
             popover.performClose(nil)
         } else {
-            NSApp.activate()
-            popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+            showPopover()
+        }
+    }
+
+    private func showPopover() {
+        guard let button = statusItem.button, !popover.isShown else { return }
+        for module in registry.activePopoverModules {
+            module.popoverWillShow()
+        }
+        NSApp.activate()
+        popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+        popover.contentViewController?.view.window?.makeKey()
+    }
+
+    /// While the popover is shown, key events go to modules in popover order; unhandled Esc closes it.
+    private func installKeyDownMonitor() {
+        keyDownMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard let self, self.popover.isShown, event.window == self.popover.contentViewController?.view.window else {
+                return event
+            }
+            for module in self.registry.activePopoverModules where module.handlePopoverKeyDown(event) {
+                return nil
+            }
+            if event.keyCode == 53 { // Esc
+                self.popover.performClose(nil)
+                return nil
+            }
+            return event
         }
     }
 

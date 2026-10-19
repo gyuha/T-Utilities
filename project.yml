@@ -16,6 +16,8 @@ packages:
     path: Packages/TUCore
   TUUI:
     path: Packages/TUUI
+  ModClipboard:
+    path: Packages/ModClipboard
 
 targets:
   T-Utilities:
@@ -26,6 +28,7 @@ targets:
     dependencies:
       - package: TUCore
       - package: TUUI
+      - package: ModClipboard
     info:
       path: App/Resources/Info.plist
       properties:

@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 import KeyboardShortcuts
 
@@ -54,15 +55,31 @@ public struct HotkeyDefinition {
     }
 }
 
+/// Lets modules open/close the main popover. The app wires the closures to its status item.
+@MainActor
+public final class PopoverControl {
+    public var isShown: () -> Bool = { false }
+    public var show: () -> Void = {}
+    public var close: () -> Void = {}
+
+    public init() {}
+
+    public func toggle() {
+        isShown() ? close() : show()
+    }
+}
+
 /// Services handed to a module on creation.
 @MainActor
 public struct ModuleContext {
     public let settings: ModuleSettings
     public let log: ModuleLog
+    public let popover: PopoverControl
 
-    public init(settings: ModuleSettings, log: ModuleLog) {
+    public init(settings: ModuleSettings, log: ModuleLog, popover: PopoverControl) {
         self.settings = settings
         self.log = log
+        self.popover = popover
     }
 }
 
@@ -89,6 +106,12 @@ public protocol TUModule: AnyObject, Observable {
 
     func makePopoverSection() -> AnyView?
     func makeSettingsView() -> AnyView
+
+    /// Called right before the main popover is shown.
+    func popoverWillShow()
+    /// Key events while the popover is shown, offered to modules in popover order.
+    /// Return `true` to consume the event.
+    func handlePopoverKeyDown(_ event: NSEvent) -> Bool
 }
 
 public extension TUModule {
@@ -97,4 +120,6 @@ public extension TUModule {
     var statusItemText: String? { nil }
     var statusItemSymbol: String? { nil }
     func makePopoverSection() -> AnyView? { nil }
+    func popoverWillShow() {}
+    func handlePopoverKeyDown(_ event: NSEvent) -> Bool { false }
 }

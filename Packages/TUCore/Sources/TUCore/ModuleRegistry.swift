@@ -15,16 +15,19 @@ public final class ModuleRegistry {
 
     @ObservationIgnored private let types: [String: any TUModule.Type]
     @ObservationIgnored private let store: ModuleStateStore
+    @ObservationIgnored private let popover: PopoverControl
     @ObservationIgnored private var transitioning: Set<String> = []
     @ObservationIgnored private let log = ModuleLog(category: "registry")
     @ObservationIgnored public var leakCheckDelay: Duration = .seconds(2)
 
-    public init(modules: [any TUModule.Type], store: ModuleStateStore) {
+    public init(modules: [any TUModule.Type], store: ModuleStateStore, popover: PopoverControl = PopoverControl()) {
         descriptors = modules.map { $0.descriptor }
         types = Dictionary(uniqueKeysWithValues: modules.map { ($0.descriptor.id, $0) })
         self.store = store
+        self.popover = popover
         enabledIDs = store.enabledIDs(descriptors: descriptors)
         order = store.order(descriptors: descriptors)
+        store.saveEnabled(enabledIDs, descriptors: descriptors)
     }
 
     public func descriptor(for id: String) -> ModuleDescriptor? {
@@ -38,6 +41,11 @@ public final class ModuleRegistry {
     /// Active modules in user order.
     public var activeModules: [any TUModule] {
         order.compactMap { active[$0] }
+    }
+
+    /// Active modules that contribute a popover section, in user order.
+    public var activePopoverModules: [any TUModule] {
+        popoverOrder.compactMap { active[$0.id] }
     }
 
     /// Descriptors of modules that can appear in the popover, in user order.
@@ -58,7 +66,7 @@ public final class ModuleRegistry {
         } else {
             enabledIDs.remove(id)
         }
-        store.saveEnabled(enabledIDs)
+        store.saveEnabled(enabledIDs, descriptors: descriptors)
         await reconcile(id)
     }
 
@@ -98,7 +106,8 @@ public final class ModuleRegistry {
         guard let type = types[id] else { return false }
         let context = ModuleContext(
             settings: ModuleSettings(defaults: store.defaults, moduleID: id),
-            log: ModuleLog(category: id)
+            log: ModuleLog(category: id),
+            popover: popover
         )
         let module = type.init(context: context)
         do {

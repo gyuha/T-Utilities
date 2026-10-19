@@ -36,6 +36,8 @@ public struct ModuleLog: Sendable {
 public struct ModuleStateStore {
     static let enabledKey = "modules.enabled"
     static let orderKey = "modules.order"
+    /// Modules the user has seen; modules added in later versions get their default enabled state.
+    static let knownKey = "modules.known"
 
     public let defaults: UserDefaults
 
@@ -44,14 +46,16 @@ public struct ModuleStateStore {
     }
 
     public func enabledIDs(descriptors: [ModuleDescriptor]) -> Set<String> {
-        if let saved = defaults.stringArray(forKey: Self.enabledKey) {
-            return Set(saved)
-        }
-        return Set(descriptors.filter(\.enabledByDefault).map(\.id))
+        let saved = Set(defaults.stringArray(forKey: Self.enabledKey) ?? [])
+        let known = Set(defaults.stringArray(forKey: Self.knownKey) ?? [])
+        let newDefaults = descriptors.filter { $0.enabledByDefault && !known.contains($0.id) }.map(\.id)
+        return saved.union(newDefaults)
     }
 
-    public func saveEnabled(_ ids: Set<String>) {
+    public func saveEnabled(_ ids: Set<String>, descriptors: [ModuleDescriptor]) {
         defaults.set(ids.sorted(), forKey: Self.enabledKey)
+        let known = Set(defaults.stringArray(forKey: Self.knownKey) ?? []).union(descriptors.map(\.id))
+        defaults.set(known.sorted(), forKey: Self.knownKey)
     }
 
     /// Saved order, with unknown IDs dropped and newly added modules appended in registration order.
