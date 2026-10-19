@@ -8,6 +8,7 @@ struct GeneralPane: View {
     let registry: ModuleRegistry
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @State private var launchAtLoginError: String?
+    @State private var showsLicenses = false
 
     var body: some View {
         Form {
@@ -37,6 +38,10 @@ struct GeneralPane: View {
                 }
             }
 
+            Section {
+                Button("오픈소스 라이선스…") { showsLicenses = true }
+            }
+
             let conflicts = runningConflicts
             if !conflicts.isEmpty {
                 Section("충돌하는 앱") {
@@ -52,6 +57,9 @@ struct GeneralPane: View {
         }
         .formStyle(.grouped)
         .navigationTitle("일반")
+        .sheet(isPresented: $showsLicenses) {
+            LicensesView { showsLicenses = false }
+        }
     }
 
     private var runningConflicts: [(app: String, module: String)] {
@@ -77,5 +85,36 @@ struct GeneralPane: View {
             launchAtLoginError = error.localizedDescription
             launchAtLogin = SMAppService.mainApp.status == .enabled
         }
+    }
+}
+
+/// T-Utilities' own license followed by the third-party notices bundled with the app.
+private struct LicensesView: View {
+    let close: () -> Void
+
+    private var text: String {
+        ["LICENSE", "THIRD_PARTY_NOTICES.md"]
+            .compactMap { Bundle.main.url(forResource: $0, withExtension: nil) }
+            .compactMap { try? String(contentsOf: $0, encoding: .utf8) }
+            .joined(separator: "\n\n────────────────────────\n\n")
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ScrollView {
+                Text(text)
+                    .font(.system(size: 11, design: .monospaced))
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding()
+            }
+            Divider()
+            HStack {
+                Spacer()
+                Button("닫기", action: close).keyboardShortcut(.defaultAction)
+            }
+            .padding(10)
+        }
+        .frame(width: 620, height: 520)
     }
 }

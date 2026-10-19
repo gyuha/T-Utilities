@@ -33,6 +33,10 @@ targets:
     platform: macOS
     sources:
       - App/Sources
+      - path: LICENSE
+        buildPhase: resources
+      - path: THIRD_PARTY_NOTICES.md
+        buildPhase: resources
     dependencies:
       - package: TUCore
       - package: TUUI
