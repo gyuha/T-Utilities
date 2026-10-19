@@ -448,3 +448,38 @@ macOS 메뉴의 서브메뉴처럼, Cable 행에 호버하거나 클릭하면 **
 - 네이티브 Swift 구현은 약 1.2–1.8k LOC로 예상함. 가장 어려운 부분은 TLS 서버임.
 - Local Network 권한이 필요함.
 - 모듈 구조상 나중에 `ModShare` 패키지와 팝오버 섹션을 추가하는 것만으로 붙일 수 있음.
+
+## 부록 B. CPU · 메모리 최적화 리뷰용 요약 (P7 시점, v0.1.0)
+
+별도 세션의 최적화 리뷰를 위한 입력 자료. 기준 측정(Debug 빌드, 모든 기본 모듈 활성, 유휴): `footprint` phys_footprint ≈ 48 MB, CPU 0.0%.
+
+### B-1. 모듈 구조
+- 앱 셸(`App/Sources`): `AppDelegate` → `ModuleRegistry`(TUCore) + `StatusItemController`(NSStatusItem + NSPopover, SwiftUI `PopoverView`) + `SettingsWindowController`(첫 표시 때 생성, 창은 닫아도 유지 `isReleasedWhenClosed=false`) + `Updater`.
+- 모듈 = 로컬 SPM 패키지, `TUModule` 프로토콜. 레지스트리가 활성화 시 인스턴스 생성 → `start()`, 비활성화 시 `stop()` → 참조 해제 → 2초 뒤 weak 참조로 누수 검사(로그).
+- 모듈: Clipboard(CopyNinja 이식), Awake(+ `AwakeGuard` 헬퍼 프로세스), Clock, Windows(Rectangle 일부), Cable(WhatCable vendored subtree). Mouse(P5)는 미구현.
+
+### B-2. 주기 작업 · 상주 리소스
+| 위치 | 주기 | 내용 | 비고 |
+|---|---|---|---|
+| `ClipboardMonitor` | 0.5 s, DispatchSourceTimer(utility 큐) | `NSPasteboard.changeCount` 비교, 변경 시에만 읽기 | 가장 잦은 wakeup. 이미지/OCR은 변경 시 1회 |
+| `AwakeModule` tick | 5 s | 정책 평가; 자동 모드면 `AgentDetector` 실행 | Detector: Paseo pid/agents JSON 읽기 + 3개 glob(`~/.claude/projects/*/*.jsonl`, `~/.codex/sessions/*/*/*/rollout-*.jsonl`, `~/.cursor/projects/*/agent-transcripts/*/*.jsonl`) 각 파일 `stat`. 세션 파일 수에 비례 — 리뷰 1순위 |
+| `LidSleepGuard` heartbeat | 10 s | AwakeGuard 파이프에 1바이트 | 뚜껑 닫힘 방지 활성 중에만 헬퍼 존재 |
+| `AwakeGuard` (별도 프로세스) | poll 30 s | stdin EOF/무응답 시 복원 후 종료 | |
+| `ClockModule` | 분 경계 1회 | 메뉴바 텍스트 갱신 | |
+| `CableModule` | 15 s + 팝오버 열 때 | WhatCable `snapshot()` 전체(IOKit 레지스트리 순회) + `PortReport` 빌드, 요약 계산 시 `CableSnapshotContext` 2회 생성 | 무거운 편. 이벤트 기반(WhatCable watcher) 전환 또는 주기 완화 후보 |
+| `Updater` | 1 h 확인 → 실제 네트워크는 24 h 1회 | GitHub API | |
+| 설정 화면(권한/Clipboard/Windows 페인) | 1 s | TCC 권한 폴링 | 해당 뷰가 보일 때만 (`.task`) |
+| `StatusItemController` | 이벤트 | 로컬 keyDown 모니터(앱 내부 이벤트만) | |
+
+### B-3. 메모리 관련 포인트
+- Clipboard: 히스토리 JSON + 이미지 파일(`~/Library/Application Support/T-Utilities/Clipboard/`), `ImageCache`(메모리 캐시) — 상한/해제 정책 확인 필요. 팝오버 리스트(높이 380) 썸네일 디코딩.
+- Cable: WhatCable `DarwinSnapshotProvider`의 static watcher 상태가 모듈 비활성화 후에도 남음(알려진 한계).
+- SwiftUI `NSHostingView`가 Cable 서브메뉴 표시마다 새로 생성됨.
+- Awake 아이콘은 템플릿 이미지 캐시(정적).
+- 비활성화 시 해제 검증: P0에서 109→47 MB 확인. 이후 추가된 모듈은 누수 검사 로그만 존재.
+
+### B-4. 알려진 한계 (리뷰 범위 밖이지만 참고)
+- P4(외부 모니터 Windows) · P5(Mouse) 하드웨어 테스트 미실시.
+- Windows: Dock/Stage Manager 보정 없음.
+- 업데이트 설치는 로컬에서 엔드투엔드 미검증(첫 릴리스 이후 확인 필요).
+- Release 빌드는 arm64 전용.
