@@ -99,3 +99,22 @@ struct AgentDetectorTests {
         #expect(detector().detect().map(\.name) == ["Claude (Paseo)"])
     }
 }
+
+struct PowerGuardTests {
+    func snapshot(battery: Bool, percent: Int?, thermal: ProcessInfo.ThermalState = .nominal) -> PowerGuard.Snapshot {
+        PowerGuard.Snapshot(onBattery: battery, batteryPercent: percent, thermal: thermal)
+    }
+
+    @Test func lowBatteryTripsOnlyOnBattery() {
+        #expect(PowerGuard.tripReason(snapshot(battery: true, percent: 20), batteryThreshold: 20, thermalGuard: true) != nil)
+        #expect(PowerGuard.tripReason(snapshot(battery: true, percent: 21), batteryThreshold: 20, thermalGuard: true) == nil)
+        #expect(PowerGuard.tripReason(snapshot(battery: false, percent: 5), batteryThreshold: 20, thermalGuard: true) == nil)
+        #expect(PowerGuard.tripReason(snapshot(battery: true, percent: 5), batteryThreshold: 0, thermalGuard: true) == nil)
+    }
+
+    @Test func thermalTripsAtSeriousWhenEnabled() {
+        #expect(PowerGuard.tripReason(snapshot(battery: false, percent: nil, thermal: .fair), batteryThreshold: 20, thermalGuard: true) == nil)
+        #expect(PowerGuard.tripReason(snapshot(battery: false, percent: nil, thermal: .serious), batteryThreshold: 20, thermalGuard: true) != nil)
+        #expect(PowerGuard.tripReason(snapshot(battery: false, percent: nil, thermal: .critical), batteryThreshold: 20, thermalGuard: false) == nil)
+    }
+}

@@ -1,9 +1,10 @@
 import AppKit
+import ClamshellKit
 import SwiftUI
 import TUCore
 
-/// Sleep prevention: off / manual (timed) / auto (while coding agents work).
-/// Lid-closed prevention is added in a later phase (root helper).
+/// Sleep prevention: off / manual (timed) / auto (while coding agents work),
+/// optionally also with the lid closed (no external display needed).
 @MainActor
 @Observable
 public final class AwakeModule: TUModule {
@@ -20,6 +21,7 @@ public final class AwakeModule: TUModule {
 
     @ObservationIgnored private let settings: ModuleSettings
     @ObservationIgnored private let assertion = SleepAssertion()
+    @ObservationIgnored private let lidGuard = LidSleepGuard()
     @ObservationIgnored private var loop: Task<Void, Never>?
 
     private(set) var mode: AwakeMode
@@ -28,6 +30,9 @@ public final class AwakeModule: TUModule {
     private(set) var activeAgents: [DetectedAgent] = []
     private(set) var lastAgentActivity: Date?
     private(set) var isHolding = false
+    private(set) var isLidSleepPrevented = false
+    /// Why prevention was released by a safety guard (battery/thermal), if it was.
+    private(set) var guardReason: String?
     private(set) var now = Date()
 
     /// Seconds; 0 = unlimited.
@@ -43,6 +48,16 @@ public final class AwakeModule: TUModule {
     var countsPermissionWait: Bool {
         didSet { settings.set(countsPermissionWait, for: "countsPermissionWait") }
     }
+    var preventsLidSleep: Bool {
+        didSet { settings.set(preventsLidSleep, for: "preventsLidSleep"); Task { await tick() } }
+    }
+    /// Release prevention on battery at or below this percent; 0 = off.
+    var batteryThreshold: Int {
+        didSet { settings.set(batteryThreshold, for: "batteryThreshold") }
+    }
+    var thermalGuard: Bool {
+        didSet { settings.set(thermalGuard, for: "thermalGuard") }
+    }
 
     public init(context: ModuleContext) {
         settings = context.settings
@@ -53,9 +68,14 @@ public final class AwakeModule: TUModule {
         let savedSources: [String] = context.settings.value("sources", default: AgentDetector.Source.allCases.map(\.rawValue))
         sources = Set(savedSources.compactMap(AgentDetector.Source.init(rawValue:)))
         countsPermissionWait = context.settings.value("countsPermissionWait", default: true)
+        preventsLidSleep = context.settings.value("preventsLidSleep", default: true)
+        batteryThreshold = context.settings.value("batteryThreshold", default: 20)
+        thermalGuard = context.settings.value("thermalGuard", default: true)
     }
 
     public func start() async throws {
+        // A previous run may have died while lid-closed sleep was disabled (and its guard with it).
+        Clamshell.setSleepDisabled(false)
         loop = Task { [weak self] in
             while !Task.isCancelled {
                 await self?.tick()
@@ -68,7 +88,9 @@ public final class AwakeModule: TUModule {
         loop?.cancel()
         loop = nil
         assertion.set(false, reason: "")
+        lidGuard.deactivate()
         isHolding = false
+        isLidSleepPrevented = false
     }
 
     // MARK: - Mode
@@ -107,10 +129,21 @@ public final class AwakeModule: TUModule {
             return
         }
 
-        isHolding = AwakePolicy.shouldHold(
+        let wanted = AwakePolicy.shouldHold(
             mode: mode, manualUntil: manualUntil, lastAgentActivity: lastAgentActivity, now: now, grace: grace
         )
+        guardReason = wanted
+            ? PowerGuard.tripReason(PowerGuard.current(), batteryThreshold: batteryThreshold, thermalGuard: thermalGuard)
+            : nil
+        isHolding = wanted && guardReason == nil
         assertion.set(isHolding, reason: "T-Utilities Awake (\(mode.rawValue))")
+
+        if isHolding && preventsLidSleep {
+            if !lidGuard.isActive { lidGuard.activate() }
+        } else {
+            lidGuard.deactivate()
+        }
+        isLidSleepPrevented = lidGuard.isActive
     }
 
     // MARK: - Shell integration
@@ -148,6 +181,9 @@ public final class AwakeModule: TUModule {
     // MARK: - Display
 
     var summary: String {
+        if let guardReason {
+            return "일시 중지 · \(guardReason)"
+        }
         switch mode {
         case .off:
             return "잠자기 허용"
@@ -229,6 +265,7 @@ private struct AwakeSettingsView: View {
             Section("상태") {
                 LabeledContent("모드", value: module.mode.displayName)
                 LabeledContent("잠자기 방지", value: module.isHolding ? "켜짐" : "꺼짐")
+                LabeledContent("뚜껑 닫힘 방지", value: module.isLidSleepPrevented ? "켜짐" : "꺼짐")
                 LabeledContent("상세", value: module.summary)
             }
             Section("수동") {
@@ -256,7 +293,15 @@ private struct AwakeSettingsView: View {
                     .font(.caption).foregroundStyle(.secondary)
             }
             Section {
-                Text("현재는 뚜껑을 연 상태에서의 잠자기만 막습니다. 뚜껑 닫힘 방지는 다음 단계(P3)에서 추가됩니다.")
+                Toggle("뚜껑을 닫아도 잠들지 않기", isOn: $module.preventsLidSleep)
+                Picker("배터리로 동작 중 이 잔량 이하이면 해제", selection: $module.batteryThreshold) {
+                    ForEach([0, 10, 20, 30, 50], id: \.self) { Text($0 == 0 ? "사용 안 함" : "\($0)%").tag($0) }
+                }
+                Toggle("기기 과열 시 해제", isOn: $module.thermalGuard)
+            } header: {
+                Text("뚜껑 닫힘 · 안전")
+            } footer: {
+                Text("잠자기 방지가 켜져 있는 동안 외부 모니터 없이 뚜껑을 닫아도 계속 동작합니다. 앱이 비정상 종료되면 보조 프로세스가 즉시 원래대로 되돌립니다. 가방 안에서는 열이 빠지지 않으니 주의하세요.")
                     .font(.caption).foregroundStyle(.secondary)
             }
         }

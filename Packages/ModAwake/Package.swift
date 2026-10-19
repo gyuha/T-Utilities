@@ -6,12 +6,15 @@ let package = Package(
     platforms: [.macOS(.v26)],
     products: [
         .library(name: "ModAwake", targets: ["ModAwake"]),
+        // Shared with the AwakeGuard helper executable.
+        .library(name: "ClamshellKit", targets: ["ClamshellKit"]),
     ],
     dependencies: [
         .package(path: "../TUCore"),
     ],
     targets: [
-        .target(name: "ModAwake", dependencies: ["TUCore"]),
+        .target(name: "ClamshellKit"),
+        .target(name: "ModAwake", dependencies: ["TUCore", "ClamshellKit"]),
         .testTarget(name: "ModAwakeTests", dependencies: ["ModAwake"]),
     ]
 )

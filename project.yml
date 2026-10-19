@@ -35,6 +35,11 @@ targets:
       - package: ModClipboard
       - package: ModClock
       - package: ModAwake
+      - target: AwakeGuard
+        embed: true
+        codeSign: true
+        copy:
+          destination: executables
     info:
       path: App/Resources/Info.plist
       properties:
@@ -58,3 +63,21 @@ targets:
         SWIFT_STRICT_CONCURRENCY: complete
     scheme:
       testTargets: []
+
+  AwakeGuard:
+    type: tool
+    platform: macOS
+    sources:
+      - App/AwakeGuard
+    dependencies:
+      - package: ModAwake
+        product: ClamshellKit
+    settings:
+      base:
+        PRODUCT_NAME: AwakeGuard
+        PRODUCT_BUNDLE_IDENTIFIER: com.taegyu.tutilities.awakeguard
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "T-Utilities Dev"
+        DEVELOPMENT_TEAM: ""
+        ENABLE_HARDENED_RUNTIME: NO
+        SKIP_INSTALL: YES

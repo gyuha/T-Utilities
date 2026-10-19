@@ -77,6 +77,13 @@ CopyNinja의 클립보드 기능을 출발점으로, 개별 앱으로 쓰던 유
    - SMAppService + ad-hoc: 업데이트할 때 깨질 수 있음.
    - 토글할 때마다 비밀번호 입력: UX가 나쁨.
 
+**✅ 채택 결과 (P3, 2026-10-19 실측):** root 없는 clamshell 호출이 macOS 27.0.1에서 **동작함**. AC와 배터리 모두에서 뚜껑을 닫고 약 3분 동안 깨어 있었음. 그래서 root 데몬 없이 구현함.
+- 앱 크래시 대비: 앱 번들 안의 `AwakeGuard` 보조 프로세스를 heartbeat 파이프로 연결함.
+  - 파이프가 끊기거나(앱 종료/크래시) 30초 동안 신호가 없으면(앱 멈춤) 설정을 되돌리고 종료함.
+  - `kill -9` 이후 뚜껑을 닫으면 정상적으로 잠드는 것을 확인함.
+- 앱 시작 시 항상 설정을 되돌린 뒤 시작함 (앱과 보조 프로세스가 함께 죽었을 경우 대비).
+- `AppleClamshellCausesSleep` ioreg 값은 실제 동작을 반영하지 않음 (판단 기준으로 쓰면 안 됨).
+
 **안전 가드 (기본값, 설정에서 변경 가능)**
 - AC 미연결 상태에서 배터리 ≤ 20%이면 해제함.
 - 열 상태가 `serious` 이상이면 해제함.
@@ -219,7 +226,7 @@ T-Utilities/
 │  ├─ ModMouse/                 # PointerKit 일부, EventTap, DockKit, HID++ 배터리
 │  └─ ModCable/                 # WhatCable 래퍼 + 경량 UI
 ├─ Vendor/WhatCable/            # Core + DarwinBackend (수정 없음, git subtree)
-├─ Helpers/AwakeDaemon/         # root LaunchDaemon (Unix 소켓, 워치독)
+├─ App/AwakeGuard/              # 뚜껑 닫힘 방지 fail-safe 보조 프로세스 (root 불필요)
 ├─ Scripts/                     # 서명, 패키징, 친구용 설치 스크립트
 └─ THIRD_PARTY_NOTICES.md
 ```
@@ -393,7 +400,7 @@ macOS 메뉴의 서브메뉴처럼, Cable 행에 호버하거나 클릭하면 **
 | **P0 셸** | XcodeGen, 자체 서명 인증서, ModuleRegistry(팩토리/활성화/순서), 팝오버 섹션 스택, 설정 창(일반/팝오버/권한), 단축키 레지스트리 | 더미 모듈 2개로 켜기/끄기, 순서 변경, 끈 뒤 weak 참조가 nil이 되는지 확인. 재빌드 후 AX 권한이 유지되고 로그인 시 실행이 동작함 | 약 900 |
 | **P1 Clipboard** | CopyNinja 이식 (싱글톤, 브랜딩, 업데이터 제거) | CopyNinja 기능 체크리스트 100%. 비활성화 시 이미지 캐시가 해제됨 | 약 1.3k |
 | **P2 Clock + Awake 기본** | `NY 00:33` accessory, 수동·자동·끔 (IOPMAssertion), Paseo + transcript 감지, 메인 아이콘 상태 | Paseo에서 Claude가 실행 중일 때 `pmset -g assertions`에 표시되고, idle이 된 뒤 grace 후 해제됨. 감지 판정 단위 테스트 | 약 100 + 약 600 |
-| **P3 뚜껑 닫힘 방지** | ① root 없는 clamshell spike → ② root LaunchDaemon(소켓, 워치독, 가드), 설치/제거 UI | 뚜껑을 닫고 외부 모니터 없이 10분 유지됨. 앱을 `kill -9`하면 20초 안에 해제됨. 배터리 가드 동작. 재부팅 후 고아 상태가 복원됨 | 약 700 |
+| **P3 뚜껑 닫힘 방지** ✅ | root 없는 clamshell 호출 + `AwakeGuard` fail-safe, 배터리/열 가드 | 배터리 상태에서 뚜껑을 닫고 약 3분 유지됨. `kill -9` 후 잠듦. 자동 모드 해제 시 뚜껑이 닫혀 있으면 잠듦 (모두 실측 완료) | 약 300 |
 | **P4 Windows** | Maximize, Next/Prev Display | 좌표 변환 단위 테스트. 2모니터와 서로 다른 배율에서 확인 | 약 500 |
 | **P5 Mouse** | 가속/속도, 스크롤 반전·선형·속도, 측면 버튼 → Mission Control / 바탕화면 보기, G304 HID++ 배터리 | LinearMouse를 끈 상태에서 같은 체감. 종료 시 HID 속성 복원. G304 배터리가 LinearMouse 값과 일치함 | 약 1.8k |
 | **P6 Cable** | WhatCable 벤더링, 한 줄 요약 + 서브메뉴 패널 (포트/케이블/충전/TB 토폴로지/디스플레이) | 원본 WhatCable과 같은 판정이 나옴. 벤더 테스트 통과. 모듈을 끄면 watcher가 0개가 됨 | 약 1.5k (+벤더 36k) |
