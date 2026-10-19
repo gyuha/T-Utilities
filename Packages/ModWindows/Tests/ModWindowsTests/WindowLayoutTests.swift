@@ -1,0 +1,78 @@
+import CoreGraphics
+import Testing
+@testable import ModWindows
+
+struct WindowLayoutTests {
+    // Laptop (primary) with a menu bar + Dock, and a larger external display to its right, lower down.
+    let laptop = WindowLayout.Screen(
+        frame: CGRect(x: 0, y: 0, width: 1512, height: 982),
+        visibleFrame: CGRect(x: 0, y: 70, width: 1512, height: 875)
+    )
+    let external = WindowLayout.Screen(
+        frame: CGRect(x: 1512, y: -235, width: 2560, height: 1440),
+        visibleFrame: CGRect(x: 1512, y: -235, width: 2560, height: 1415)
+    )
+    // A third display above the laptop (top row comes first in yThenMinX order).
+    let above = WindowLayout.Screen(
+        frame: CGRect(x: 0, y: 982, width: 1920, height: 1080),
+        visibleFrame: CGRect(x: 0, y: 982, width: 1920, height: 1055)
+    )
+
+    @Test func maximizeFillsTheVisibleFrameOfTheCurrentScreen() {
+        let window = CGRect(x: 100, y: 200, width: 600, height: 400)
+        #expect(WindowLayout.target(for: .maximize, window: window, screens: [laptop, external]) == laptop.visibleFrame)
+
+        let onExternal = CGRect(x: 2000, y: 0, width: 800, height: 600)
+        #expect(WindowLayout.target(for: .maximize, window: onExternal, screens: [laptop, external]) == external.visibleFrame)
+    }
+
+    @Test func windowSpanningScreensBelongsToTheLargerShare() {
+        let window = CGRect(x: 1300, y: 100, width: 800, height: 400) // mostly on external
+        #expect(WindowLayout.screenContaining(window, in: [laptop, external]) == external)
+    }
+
+    @Test func nextDisplayNeedsTwoScreens() {
+        let window = CGRect(x: 100, y: 200, width: 600, height: 400)
+        #expect(WindowLayout.target(for: .nextDisplay, window: window, screens: [laptop]) == nil)
+    }
+
+    @Test func maximizedWindowStaysMaximizedOnNextDisplay() {
+        let target = WindowLayout.target(for: .nextDisplay, window: laptop.visibleFrame, screens: [laptop, external])
+        #expect(target == external.visibleFrame)
+    }
+
+    @Test func twoScreensNextAndPreviousBothGoToTheOther() {
+        let window = CGRect(x: 100, y: 200, width: 600, height: 400)
+        let next = WindowLayout.target(for: .nextDisplay, window: window, screens: [laptop, external])
+        let previous = WindowLayout.target(for: .previousDisplay, window: window, screens: [laptop, external])
+        #expect(next.map { external.visibleFrame.contains($0) } == true)
+        #expect(next == previous)
+        #expect(next?.size == window.size)
+    }
+
+    @Test func orderIsTopRowFirstThenLeftToRight() {
+        #expect(WindowLayout.order([external, laptop, above]) == [above, laptop, external])
+    }
+
+    @Test func threeScreensCycleInOrder() {
+        let window = CGRect(x: 100, y: 200, width: 600, height: 400) // on laptop (index 1)
+        let screens = [laptop, external, above]
+        let next = WindowLayout.target(for: .nextDisplay, window: window, screens: screens)
+        let previous = WindowLayout.target(for: .previousDisplay, window: window, screens: screens)
+        #expect(next.map { external.visibleFrame.contains($0) } == true)
+        #expect(previous.map { above.visibleFrame.contains($0) } == true)
+    }
+
+    @Test func constrainedPullsAnOversizedOrOffscreenWindowBackIn() {
+        let bounds = CGRect(x: 0, y: 70, width: 1512, height: 875)
+        #expect(WindowLayout.constrained(CGRect(x: 1400, y: 100, width: 300, height: 200), to: bounds).maxX == bounds.maxX)
+        #expect(WindowLayout.constrained(CGRect(x: -50, y: 0, width: 300, height: 200), to: bounds).origin == CGPoint(x: 0, y: 70))
+    }
+
+    @Test func flipIsItsOwnInverse() {
+        let rect = CGRect(x: 10, y: 20, width: 300, height: 200)
+        let flipped = WindowLayout.flipped(rect, primaryScreenMaxY: 982)
+        #expect(flipped == CGRect(x: 10, y: 762, width: 300, height: 200))
+        #expect(WindowLayout.flipped(flipped, primaryScreenMaxY: 982) == rect)
+    }
+}
