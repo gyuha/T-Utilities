@@ -2,7 +2,18 @@
 
 T-Utilities is signed with a personal certificate, not an Apple Developer ID, so macOS needs one extra step the first time.
 
-Requirements: macOS 26 or later.
+Requirements: macOS 26 or later, Apple Silicon.
+
+## Homebrew (recommended)
+
+```sh
+brew install --cask mordol/tap/t-utilities
+```
+
+Homebrew installs to `/Applications` and clears the quarantine flag, so you can skip steps 1–3 below and go straight to step 4.
+Uninstall with `brew uninstall --cask t-utilities` (add `--zap` to also delete settings and clipboard history).
+
+## Manual
 
 1. Download `T-Utilities-x.y.z.zip` from the [latest release](https://github.com/mordol/T-Utilities/releases/latest) and unzip it.
 2. Move `T-Utilities.app` to `/Applications`.

@@ -11,7 +11,7 @@ Each module can be turned on/off and reordered in Settings; disabled modules are
 | Windows | Maximize, next/previous display | [Rectangle](https://github.com/rxhanson/Rectangle) |
 | Cable | USB-C port, cable and charger diagnostics | [WhatCable](https://github.com/darrylmorley/whatcable) |
 
-Install: see [INSTALL.md](INSTALL.md). Plan and design notes: [PLAN.md](PLAN.md).
+Install: `brew install --cask mordol/tap/t-utilities`, or see [INSTALL.md](INSTALL.md). Plan and design notes: [PLAN.md](PLAN.md).
 
 ## Build
 
