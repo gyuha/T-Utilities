@@ -1,0 +1,51 @@
+name: T-Utilities
+options:
+  bundleIdPrefix: com.taegyu
+  deploymentTarget:
+    macOS: "26.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MACOSX_DEPLOYMENT_TARGET: "26.0"
+    ARCHS: arm64
+
+packages:
+  TUCore:
+    path: Packages/TUCore
+  TUUI:
+    path: Packages/TUUI
+
+targets:
+  T-Utilities:
+    type: application
+    platform: macOS
+    sources:
+      - App/Sources
+    dependencies:
+      - package: TUCore
+      - package: TUUI
+    info:
+      path: App/Resources/Info.plist
+      properties:
+        CFBundleDisplayName: T-Utilities
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        LSUIElement: true
+        LSMinimumSystemVersion: "26.0"
+        NSHumanReadableCopyright: "© 2026 Taegyu"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.taegyu.tutilities
+        PRODUCT_NAME: T-Utilities
+        # Stable self-signed identity so TCC grants (Accessibility…) survive rebuilds.
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "T-Utilities Dev"
+        DEVELOPMENT_TEAM: ""
+        ENABLE_HARDENED_RUNTIME: NO
+        ENABLE_APP_SANDBOX: NO
+        GENERATE_INFOPLIST_FILE: NO
+        SWIFT_STRICT_CONCURRENCY: complete
+    scheme:
+      testTargets: []

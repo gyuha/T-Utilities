@@ -1,0 +1,142 @@
+import Foundation
+import KeyboardShortcuts
+
+/// Owns module lifecycles. Only module *types* are kept permanently; an instance is created when a module is
+/// enabled and dropped when it is disabled, so a disabled module holds no memory.
+@MainActor
+@Observable
+public final class ModuleRegistry {
+    public let descriptors: [ModuleDescriptor]
+    public private(set) var enabledIDs: Set<String>
+    /// Order of all modules. Only those with a popover section are user-visible in the order list.
+    public private(set) var order: [String]
+    public private(set) var active: [String: any TUModule] = [:]
+    public private(set) var startErrors: [String: String] = [:]
+
+    @ObservationIgnored private let types: [String: any TUModule.Type]
+    @ObservationIgnored private let store: ModuleStateStore
+    @ObservationIgnored private var transitioning: Set<String> = []
+    @ObservationIgnored private let log = ModuleLog(category: "registry")
+    @ObservationIgnored public var leakCheckDelay: Duration = .seconds(2)
+
+    public init(modules: [any TUModule.Type], store: ModuleStateStore) {
+        descriptors = modules.map { $0.descriptor }
+        types = Dictionary(uniqueKeysWithValues: modules.map { ($0.descriptor.id, $0) })
+        self.store = store
+        enabledIDs = store.enabledIDs(descriptors: descriptors)
+        order = store.order(descriptors: descriptors)
+    }
+
+    public func descriptor(for id: String) -> ModuleDescriptor? {
+        descriptors.first { $0.id == id }
+    }
+
+    public func isEnabled(_ id: String) -> Bool {
+        enabledIDs.contains(id)
+    }
+
+    /// Active modules in user order.
+    public var activeModules: [any TUModule] {
+        order.compactMap { active[$0] }
+    }
+
+    /// Descriptors of modules that can appear in the popover, in user order.
+    public var popoverOrder: [ModuleDescriptor] {
+        order.compactMap(descriptor(for:)).filter(\.hasPopoverSection)
+    }
+
+    public func startEnabledModules() async {
+        for id in order where enabledIDs.contains(id) {
+            await reconcile(id)
+        }
+    }
+
+    public func setEnabled(_ enabled: Bool, for id: String) async {
+        guard types[id] != nil else { return }
+        if enabled {
+            enabledIDs.insert(id)
+        } else {
+            enabledIDs.remove(id)
+        }
+        store.saveEnabled(enabledIDs)
+        await reconcile(id)
+    }
+
+    public func movePopoverItems(fromOffsets source: IndexSet, toOffset destination: Int) {
+        var popoverIDs = popoverOrder.map(\.id)
+        popoverIDs.move(fromOffsets: source, toOffset: destination)
+        order = popoverIDs + order.filter { !popoverIDs.contains($0) }
+        store.saveOrder(order)
+    }
+
+    /// Stops every active module (reverse order). Call before the app terminates.
+    public func shutdown() async {
+        for id in order.reversed() where active[id] != nil {
+            await deactivate(id)
+        }
+    }
+
+    // MARK: - Lifecycle
+
+    /// Drives the module towards its desired state. Toggles that arrive while a transition is in flight are
+    /// picked up by the loop of the in-flight call.
+    private func reconcile(_ id: String) async {
+        guard !transitioning.contains(id) else { return }
+        transitioning.insert(id)
+        defer { transitioning.remove(id) }
+
+        while enabledIDs.contains(id) != (active[id] != nil) {
+            if enabledIDs.contains(id) {
+                guard await activate(id) else { break }
+            } else {
+                await deactivate(id)
+            }
+        }
+    }
+
+    private func activate(_ id: String) async -> Bool {
+        guard let type = types[id] else { return false }
+        let context = ModuleContext(
+            settings: ModuleSettings(defaults: store.defaults, moduleID: id),
+            log: ModuleLog(category: id)
+        )
+        let module = type.init(context: context)
+        do {
+            try await module.start()
+        } catch {
+            log.logger.error("Failed to start \(id, privacy: .public): \(error.localizedDescription, privacy: .public)")
+            startErrors[id] = error.localizedDescription
+            await module.stop()
+            return false
+        }
+        startErrors[id] = nil
+        active[id] = module
+        for hotkey in module.hotkeys {
+            let action = hotkey.action
+            KeyboardShortcuts.onKeyUp(for: hotkey.name) {
+                MainActor.assumeIsolated { action() }
+            }
+        }
+        log.logger.info("Started \(id, privacy: .public)")
+        return true
+    }
+
+    private func deactivate(_ id: String) async {
+        guard let module = active.removeValue(forKey: id) else { return }
+        for hotkey in module.hotkeys {
+            KeyboardShortcuts.removeHandler(for: hotkey.name)
+        }
+        await module.stop()
+        log.logger.info("Stopped \(id, privacy: .public)")
+        scheduleLeakCheck(module, id: id)
+    }
+
+    private func scheduleLeakCheck(_ module: any TUModule, id: String) {
+        let delay = leakCheckDelay
+        Task { [weak module, weak self] in
+            try? await Task.sleep(for: delay)
+            guard module != nil else { return }
+            self?.log.logger.fault("Module \(id, privacy: .public) is still alive after being disabled")
+        }
+    }
+}
