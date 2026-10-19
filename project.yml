@@ -24,6 +24,8 @@ packages:
     path: Packages/ModAwake
   ModWindows:
     path: Packages/ModWindows
+  ModCable:
+    path: Packages/ModCable
 
 targets:
   T-Utilities:
@@ -38,6 +40,7 @@ targets:
       - package: ModClock
       - package: ModAwake
       - package: ModWindows
+      - package: ModCable
       - target: AwakeGuard
         embed: true
         codeSign: true

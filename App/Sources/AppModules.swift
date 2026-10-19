@@ -1,4 +1,5 @@
 import ModAwake
+import ModCable
 import ModClipboard
 import ModClock
 import ModWindows
@@ -10,6 +11,7 @@ enum AppModules {
     static let all: [any TUModule.Type] = [
         AwakeModule.self,
         ClipboardModule.self,
+        CableModule.self,
         ClockModule.self,
         WindowsModule.self,
     ]

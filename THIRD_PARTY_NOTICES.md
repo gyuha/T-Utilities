@@ -59,6 +59,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
+## WhatCable — `Vendor/WhatCable` (unmodified, git subtree), used by `Packages/ModCable`
+
+https://github.com/darrylmorley/whatcable — MIT License, © 2026 Darryl Morley.
+Full license: `Vendor/WhatCable/LICENSE`. WhatCable's own third-party notices (including the
+edid-decode port from v4l-utils): `Vendor/WhatCable/THIRD_PARTY_NOTICES.md`.
+
 ## KeyboardShortcuts (dependency)
 
 https://github.com/sindresorhus/KeyboardShortcuts — MIT License, © Sindre Sorhus
