@@ -52,10 +52,9 @@ final class StatusItemController: NSObject {
     private func updateAppearance() {
         guard let button = statusItem.button else { return }
         let modules = registry.activeModules
-        let symbol = modules.lazy.compactMap(\.statusItemSymbol).first ?? Self.defaultSymbol
-        let image = NSImage(systemSymbolName: symbol, accessibilityDescription: "T-Utilities")
-        image?.isTemplate = true
-        button.image = image
+        let defaultImage = NSImage(systemSymbolName: Self.defaultSymbol, accessibilityDescription: "T-Utilities")
+        defaultImage?.isTemplate = true
+        button.image = modules.lazy.compactMap(\.statusItemImage).first ?? defaultImage
 
         let text = modules.compactMap(\.statusItemText).joined(separator: "  ")
         button.title = text.isEmpty ? "" : " \(text)"
@@ -107,6 +106,12 @@ final class StatusItemController: NSObject {
 
     private func showQuickMenu() {
         let menu = NSMenu()
+        for module in registry.activeModules {
+            let items = module.makeQuickMenuItems()
+            guard !items.isEmpty else { continue }
+            items.forEach(menu.addItem)
+            menu.addItem(.separator())
+        }
         let settings = NSMenuItem(title: "설정…", action: #selector(menuOpenSettings), keyEquivalent: ",")
         settings.target = self
         menu.addItem(settings)

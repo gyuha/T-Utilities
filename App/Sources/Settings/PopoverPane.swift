@@ -2,11 +2,12 @@ import SwiftUI
 import TUCore
 
 /// Enable/disable every module and reorder the popover sections.
+/// Uses List (not Form): on macOS only List supports drag-to-reorder via onMove.
 struct PopoverPane: View {
     let registry: ModuleRegistry
 
     var body: some View {
-        Form {
+        List {
             Section {
                 ForEach(registry.popoverOrder) { descriptor in
                     ModuleToggleRow(registry: registry, descriptor: descriptor, showsHandle: true)
@@ -30,7 +31,7 @@ struct PopoverPane: View {
                 }
             }
         }
-        .formStyle(.grouped)
+        .listStyle(.inset(alternatesRowBackgrounds: false))
         .navigationTitle("팝오버")
     }
 }
@@ -54,5 +55,6 @@ struct ModuleToggleRow: View {
             .labelsHidden()
             .toggleStyle(.switch)
         }
+        .padding(.vertical, 2)
     }
 }

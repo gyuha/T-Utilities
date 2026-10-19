@@ -101,11 +101,14 @@ public protocol TUModule: AnyObject, Observable {
 
     /// Text appended next to the main menu bar icon (e.g. the clock).
     var statusItemText: String? { get }
-    /// Overrides the main menu bar icon (e.g. the Awake state).
-    var statusItemSymbol: String? { get }
+    /// Overrides the main menu bar icon (e.g. the Awake state). Should be a template image.
+    var statusItemImage: NSImage? { get }
 
     func makePopoverSection() -> AnyView?
     func makeSettingsView() -> AnyView
+
+    /// Items for the status item's right-click menu (e.g. Awake mode). Shown above Settings/Quit.
+    func makeQuickMenuItems() -> [NSMenuItem]
 
     /// Called right before the main popover is shown.
     func popoverWillShow()
@@ -118,8 +121,9 @@ public extension TUModule {
     var status: ModuleStatus { .running }
     var hotkeys: [HotkeyDefinition] { [] }
     var statusItemText: String? { nil }
-    var statusItemSymbol: String? { nil }
+    var statusItemImage: NSImage? { nil }
     func makePopoverSection() -> AnyView? { nil }
+    func makeQuickMenuItems() -> [NSMenuItem] { [] }
     func popoverWillShow() {}
     func handlePopoverKeyDown(_ event: NSEvent) -> Bool { false }
 }
