@@ -13,6 +13,28 @@ public enum Permission: String, CaseIterable, Hashable, Sendable {
         }
     }
 
+    /// Live TCC state (no change notification exists; poll when needed).
+    @MainActor
+    public var isGranted: Bool {
+        switch self {
+        case .accessibility: AXIsProcessTrusted()
+        case .inputMonitoring: IOHIDCheckAccess(kIOHIDRequestTypeListenEvent) == kIOHIDAccessTypeGranted
+        }
+    }
+
+    /// Shows the system prompt (first time only) and opens the matching System Settings pane.
+    @MainActor
+    public func request() {
+        switch self {
+        case .accessibility:
+            let options = ["AXTrustedCheckOptionPrompt": true] as CFDictionary
+            _ = AXIsProcessTrustedWithOptions(options)
+        case .inputMonitoring:
+            _ = IOHIDRequestAccess(kIOHIDRequestTypeListenEvent)
+        }
+        NSWorkspace.shared.open(settingsURL)
+    }
+
     var settingsURL: URL {
         switch self {
         case .accessibility:
@@ -33,9 +55,7 @@ public final class PermissionCenter {
     }
 
     public func refresh() {
-        var result: Set<Permission> = []
-        if AXIsProcessTrusted() { result.insert(.accessibility) }
-        if IOHIDCheckAccess(kIOHIDRequestTypeListenEvent) == kIOHIDAccessTypeGranted { result.insert(.inputMonitoring) }
+        let result = Set(Permission.allCases.filter(\.isGranted))
         if result != granted { granted = result }
     }
 
@@ -43,15 +63,7 @@ public final class PermissionCenter {
         granted.contains(permission)
     }
 
-    /// Shows the system prompt (first time only) and opens the matching System Settings pane.
     public func request(_ permission: Permission) {
-        switch permission {
-        case .accessibility:
-            let options = ["AXTrustedCheckOptionPrompt": true] as CFDictionary
-            _ = AXIsProcessTrustedWithOptions(options)
-        case .inputMonitoring:
-            _ = IOHIDRequestAccess(kIOHIDRequestTypeListenEvent)
-        }
-        NSWorkspace.shared.open(permission.settingsURL)
+        permission.request()
     }
 }

@@ -6,6 +6,7 @@ import SwiftUI
 /// (version, updates, launch at login, quit) live in the shell instead.
 struct ClipboardSectionView: View {
     @ObservedObject var store: ClipboardStore
+    var autoPaste: Bool
     var onClose: () -> Void
 
     @FocusState private var searchFocused: Bool
@@ -175,7 +176,7 @@ struct ClipboardSectionView: View {
     // MARK: - Hints
 
     private var hints: some View {
-        Text(verbatim: "↑↓ 이동 · ↩ 복사 · ⌘1~0 바로 복사 · ⇧클릭/⌘⇧1~0 OCR · Space 미리보기 · ⌘K 삭제")
+        Text(verbatim: "↑↓ 이동 · ↩ \(autoPaste ? "붙여넣기" : "복사") · ⌘1~0 바로 복사 · ⇧클릭/⌘⇧1~0 OCR · Space 미리보기 · ⌘K 삭제")
             .font(.caption2)
             .foregroundStyle(.secondary)
             .lineLimit(2)

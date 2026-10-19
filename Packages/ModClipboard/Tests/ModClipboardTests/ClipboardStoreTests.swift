@@ -125,4 +125,21 @@ struct ClipboardModuleTests {
         module = nil
         #expect(released == nil)
     }
+
+    @Test func autoPasteSettingPersistsAndDefaultsOff() {
+        let suite = "ModClipboardTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        func makeModule() -> ClipboardModule {
+            let context = ModuleContext(
+                settings: ModuleSettings(defaults: defaults, moduleID: "clipboard"),
+                log: ModuleLog(category: "test"),
+                popover: PopoverControl()
+            )
+            return ClipboardModule(context: context, storageURL: FileManager.default.temporaryDirectory)
+        }
+        let first = makeModule()
+        #expect(first.autoPaste == false)
+        first.autoPaste = true
+        #expect(makeModule().autoPaste == true)
+    }
 }

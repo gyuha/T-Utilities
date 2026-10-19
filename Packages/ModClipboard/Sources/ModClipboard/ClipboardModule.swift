@@ -27,7 +27,15 @@ public final class ClipboardModule: TUModule {
     ]
 
     @ObservationIgnored private let popover: PopoverControl
+    @ObservationIgnored private let settings: ModuleSettings
     @ObservationIgnored private let storageURL: URL
+    /// App that was frontmost before the popover opened — the paste target.
+    @ObservationIgnored private var previousApp: NSRunningApplication?
+
+    /// Return (↩) also pastes into the previously focused app.
+    var autoPaste: Bool {
+        didSet { settings.set(autoPaste, for: "autoPaste") }
+    }
     @ObservationIgnored private var store: ClipboardStore?
     @ObservationIgnored private var monitor: ClipboardMonitor?
 
@@ -37,7 +45,9 @@ public final class ClipboardModule: TUModule {
 
     init(context: ModuleContext, storageURL: URL) {
         popover = context.popover
+        settings = context.settings
         self.storageURL = storageURL
+        autoPaste = context.settings.value("autoPaste", default: false)
     }
 
     public func start() async throws {
@@ -60,6 +70,11 @@ public final class ClipboardModule: TUModule {
         monitor?.stop()
         monitor = nil
         store = nil
+        previousApp = nil
+    }
+
+    public var status: ModuleStatus {
+        autoPaste && !Permission.accessibility.isGranted ? .needsPermission(.accessibility) : .running
     }
 
     public var hotkeys: [HotkeyDefinition] {
@@ -68,16 +83,26 @@ public final class ClipboardModule: TUModule {
 
     public func makePopoverSection() -> AnyView? {
         guard let store else { return nil }
-        return AnyView(ClipboardSectionView(store: store) { [popover] in popover.close() })
+        return AnyView(ClipboardSectionView(store: store, autoPaste: autoPaste) { [popover] in popover.close() })
     }
 
     public func makeSettingsView() -> AnyView {
         guard let store else { return AnyView(EmptyView()) }
-        return AnyView(ClipboardSettingsView(store: store))
+        return AnyView(ClipboardSettingsView(module: self, store: store))
     }
 
     public func popoverWillShow() {
+        let frontmost = NSWorkspace.shared.frontmostApplication
+        previousApp = frontmost == .current ? nil : frontmost
         store?.prepareForPresentation()
+    }
+
+    /// ↩: copy, close, and — when enabled and permitted — paste into the previously focused app.
+    private func copyAndPaste(_ item: ClipboardItem, store: ClipboardStore) {
+        store.copyToClipboard(item)
+        popover.close()
+        guard autoPaste, Permission.accessibility.isGranted, let previousApp else { return }
+        Paster.paste(into: previousApp)
     }
 
     // MARK: - Keyboard navigation
@@ -131,8 +156,7 @@ public final class ClipboardModule: TUModule {
             if flags.contains(.shift) {
                 store.performOCRCopy(for: item)
             } else {
-                store.copyToClipboard(item)
-                popover.close()
+                copyAndPaste(item, store: store)
             }
             return true
         case 49: // Space — Quick Look while nothing is being typed
@@ -146,10 +170,34 @@ public final class ClipboardModule: TUModule {
 }
 
 private struct ClipboardSettingsView: View {
+    let module: ClipboardModule
     @ObservedObject var store: ClipboardStore
+    @State private var accessibilityGranted = Permission.accessibility.isGranted
 
     var body: some View {
         Form {
+            Section {
+                Toggle("↩로 복사하면 현재 입력 위치에 바로 붙여넣기", isOn: Binding(
+                    get: { module.autoPaste },
+                    set: { enabled in
+                        module.autoPaste = enabled
+                        if enabled && !accessibilityGranted { Permission.accessibility.request() }
+                    }
+                ))
+                if module.autoPaste && !accessibilityGranted {
+                    LabeledContent {
+                        Button("허용하기…") { Permission.accessibility.request() }
+                    } label: {
+                        Label("붙여넣기에는 손쉬운 사용 권한이 필요합니다", systemImage: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.orange)
+                    }
+                }
+            } header: {
+                Text("붙여넣기")
+            } footer: {
+                Text("팝오버를 열기 전에 사용하던 앱으로 돌아가 ⌘V를 보냅니다. 클릭이나 ⌘1~0은 복사만 합니다.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
             Section("히스토리") {
                 LabeledContent("저장된 항목", value: "\(store.items.count) / \(ClipboardStore.maxItems)")
                 LabeledContent("저장 위치") {
@@ -169,5 +217,12 @@ private struct ClipboardSettingsView: View {
             }
         }
         .formStyle(.grouped)
+        // TCC has no change notification; poll only while this view is visible.
+        .task {
+            while !Task.isCancelled {
+                accessibilityGranted = Permission.accessibility.isGranted
+                try? await Task.sleep(for: .seconds(1))
+            }
+        }
     }
 }
