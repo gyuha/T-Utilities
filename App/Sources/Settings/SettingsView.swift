@@ -12,6 +12,7 @@ enum SettingsPage: Hashable {
 struct SettingsView: View {
     let registry: ModuleRegistry
     let permissions: PermissionCenter
+    let updater: Updater
     @State private var selection: SettingsPage? = .general
 
     var body: some View {
@@ -39,7 +40,7 @@ struct SettingsView: View {
         } detail: {
             switch selection ?? .general {
             case .general:
-                GeneralPane(registry: registry)
+                GeneralPane(registry: registry, updater: updater)
             case .popover:
                 PopoverPane(registry: registry)
             case .permissions:

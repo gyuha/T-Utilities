@@ -14,14 +14,14 @@ final class StatusItemController: NSObject {
     private let popover = NSPopover()
     private var keyDownMonitor: Any?
 
-    init(registry: ModuleRegistry, popoverControl: PopoverControl, openSettings: @escaping () -> Void) {
+    init(registry: ModuleRegistry, updater: Updater, popoverControl: PopoverControl, openSettings: @escaping () -> Void) {
         self.registry = registry
         self.openSettings = openSettings
         super.init()
 
         popover.behavior = .transient
         popover.animates = false
-        let hosting = NSHostingController(rootView: PopoverView(registry: registry) { [weak self] in
+        let hosting = NSHostingController(rootView: PopoverView(registry: registry, updater: updater) { [weak self] in
             self?.popover.performClose(nil)
             openSettings()
         })

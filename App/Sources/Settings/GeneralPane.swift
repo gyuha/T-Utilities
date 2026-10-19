@@ -6,6 +6,7 @@ import TUCore
 
 struct GeneralPane: View {
     let registry: ModuleRegistry
+    let updater: Updater
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @State private var launchAtLoginError: String?
     @State private var showsLicenses = false
@@ -38,6 +39,21 @@ struct GeneralPane: View {
                 }
             }
 
+            Section("업데이트") {
+                LabeledContent("현재 버전", value: updater.currentVersion)
+                HStack {
+                    updateStatus
+                    Spacer()
+                    if case .available(let release) = updater.state {
+                        Link("릴리스 노트", destination: release.pageURL)
+                        Button("설치 후 다시 실행", action: updater.install)
+                    } else {
+                        Button("지금 확인") { Task { await updater.check() } }
+                            .disabled(updater.state == .checking)
+                    }
+                }
+            }
+
             Section {
                 Button("오픈소스 라이선스…") { showsLicenses = true }
             }
@@ -59,6 +75,17 @@ struct GeneralPane: View {
         .navigationTitle("일반")
         .sheet(isPresented: $showsLicenses) {
             LicensesView { showsLicenses = false }
+        }
+    }
+
+    @ViewBuilder private var updateStatus: some View {
+        switch updater.state {
+        case .idle: Text("아직 확인하지 않음").foregroundStyle(.secondary)
+        case .checking: Text("확인 중…").foregroundStyle(.secondary)
+        case .upToDate: Text("최신 버전입니다").foregroundStyle(.secondary)
+        case .available(let release): Text("업데이트 가능 v\(release.version)")
+        case .installing(let release): Text("v\(release.version) 설치 중…").foregroundStyle(.secondary)
+        case .failed(let message): Text(message).foregroundStyle(.red)
         }
     }
 

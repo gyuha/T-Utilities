@@ -6,16 +6,18 @@ import TUCore
 final class SettingsWindowController {
     private let registry: ModuleRegistry
     private let permissions: PermissionCenter
+    private let updater: Updater
     private var window: NSWindow?
 
-    init(registry: ModuleRegistry, permissions: PermissionCenter) {
+    init(registry: ModuleRegistry, permissions: PermissionCenter, updater: Updater) {
         self.registry = registry
         self.permissions = permissions
+        self.updater = updater
     }
 
     func show() {
         if window == nil {
-            let hosting = NSHostingController(rootView: SettingsView(registry: registry, permissions: permissions))
+            let hosting = NSHostingController(rootView: SettingsView(registry: registry, permissions: permissions, updater: updater))
             let window = NSWindow(contentViewController: hosting)
             window.title = "T-Utilities 설정"
             window.styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]

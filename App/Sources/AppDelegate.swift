@@ -6,21 +6,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let popoverControl = PopoverControl()
     private lazy var registry = ModuleRegistry(modules: AppModules.all, store: ModuleStateStore(), popover: popoverControl)
     private let permissions = PermissionCenter()
+    private let updater = Updater()
     private var statusItem: StatusItemController?
     private var settingsWindow: SettingsWindowController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.mainMenu = makeMainMenu()
 
-        let settingsWindow = SettingsWindowController(registry: registry, permissions: permissions)
+        let settingsWindow = SettingsWindowController(registry: registry, permissions: permissions, updater: updater)
         self.settingsWindow = settingsWindow
-        statusItem = StatusItemController(registry: registry, popoverControl: popoverControl) {
+        statusItem = StatusItemController(registry: registry, updater: updater, popoverControl: popoverControl) {
             settingsWindow.show()
         }
 
         Task {
             await registry.startEnabledModules()
         }
+        updater.startSchedule()
     }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
