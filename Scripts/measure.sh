@@ -13,7 +13,8 @@ DURATION=${DURATION:-120}
 OUT=${OUT:-build/measure-$(date +%Y%m%d-%H%M%S).csv}
 DOMAIN=com.taegyu.tutilities
 ALL=(awake clipboard cable clock windows mouse)
-CONFIGS=(${@:-none awake clipboard cable clock windows mouse all})
+CONFIGS=($@)
+(( $#CONFIGS )) || CONFIGS=(none $ALL all)
 
 [[ -d $APP ]] || { echo "app not found: $APP"; exit 1; }
 mkdir -p ${OUT:h}
