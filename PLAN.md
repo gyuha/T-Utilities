@@ -470,6 +470,7 @@ macOS 메뉴의 서브메뉴처럼, Cable 행에 호버하거나 클릭하면 **
 | `ClockModule` | 분 경계 1회 | 메뉴바 텍스트 갱신 | |
 | `CableModule` | 15 s + 팝오버 열 때 | WhatCable `snapshot()` 전체(IOKit 레지스트리 순회) + `PortReport` 빌드, 요약 계산 시 `CableSnapshotContext` 2회 생성 | 무거운 편. 이벤트 기반(WhatCable watcher) 전환 또는 주기 완화 후보 |
 | `MouseModule` (켜져 있을 때만) | 이벤트 | 세션 이벤트 탭(otherMouse·scrollWheel, 메인 런루프) — 모든 휠/측면 버튼 이벤트가 통과 | 콜백은 짧은 분기만 |
+| `MouseModule` 탭 감시 | 3 s | 임시 이벤트 탭 생성 후 즉시 해제(백그라운드) — 권한 상실 시 탭 제거 | 권한 상실 시 전체 입력 멈춤 방지용, 생략 불가 |
 | `MouseModule` 배터리 | 300 s + 장치 알림 | HID++ 요청(리시버 경유, 1 s 타임아웃) | 장치 연결 변경 시 1 s 뒤 재적용 |
 | `Updater` | 1 h 확인 → 실제 네트워크는 24 h 1회 | GitHub API | |
 | 설정 화면(권한/Clipboard/Windows 페인) | 1 s | TCC 권한 폴링 | 해당 뷰가 보일 때만 (`.task`) |
