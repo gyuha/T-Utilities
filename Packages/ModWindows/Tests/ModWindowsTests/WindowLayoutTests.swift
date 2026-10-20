@@ -93,16 +93,22 @@ struct EdgeResizeSnapTests {
 
     @Test func grabsOnlyTopOrBottomBorder() {
         #expect(WindowLayout.resizeEdge(at: CGPoint(x: 500, y: 702), window: window) == .top)
+        #expect(WindowLayout.resizeEdge(at: CGPoint(x: 500, y: 698), window: window) == .top)
+        #expect(WindowLayout.resizeEdge(at: CGPoint(x: 500, y: 695), window: window) == nil)   // title bar → move
         #expect(WindowLayout.resizeEdge(at: CGPoint(x: 500, y: 297), window: window) == .bottom)
-        #expect(WindowLayout.resizeEdge(at: CGPoint(x: 500, y: 650), window: window) == nil)   // title bar / content
+        #expect(WindowLayout.resizeEdge(at: CGPoint(x: 500, y: 650), window: window) == nil)
         #expect(WindowLayout.resizeEdge(at: CGPoint(x: 1100, y: 700), window: window) == nil)  // beside the window
     }
 
-    @Test func triggersAtMenuBarOrDock() {
-        #expect(WindowLayout.isAtScreenEdge(CGPoint(x: 500, y: 970), edge: .top, visibleFrame: visible))
-        #expect(!WindowLayout.isAtScreenEdge(CGPoint(x: 500, y: 900), edge: .top, visibleFrame: visible))
-        #expect(WindowLayout.isAtScreenEdge(CGPoint(x: 500, y: 40), edge: .bottom, visibleFrame: visible))
-        #expect(!WindowLayout.isAtScreenEdge(CGPoint(x: 500, y: 40), edge: .top, visibleFrame: visible))
+    @Test func triggersNearMenuBarOrDockWithSlack() {
+        let screen = WindowLayout.Screen(frame: CGRect(x: 0, y: 0, width: 1512, height: 982), visibleFrame: visible)
+        #expect(WindowLayout.isAtScreenEdge(CGPoint(x: 500, y: 982), edge: .top, screen: screen))     // very top pixel
+        #expect(WindowLayout.isAtScreenEdge(CGPoint(x: 500, y: 952), edge: .top, screen: screen))     // 5pt below menu bar
+        #expect(!WindowLayout.isAtScreenEdge(CGPoint(x: 500, y: 900), edge: .top, screen: screen))
+        #expect(WindowLayout.isAtScreenEdge(CGPoint(x: 500, y: 66), edge: .bottom, screen: screen))   // just above Dock
+        #expect(WindowLayout.isAtScreenEdge(CGPoint(x: 500, y: -30), edge: .bottom, screen: screen))  // onto display below
+        #expect(!WindowLayout.isAtScreenEdge(CGPoint(x: 500, y: -80), edge: .bottom, screen: screen))
+        #expect(!WindowLayout.isAtScreenEdge(CGPoint(x: 500, y: 40), edge: .top, screen: screen))
     }
 
     @Test func keepsWidthAndFillsHeight() {

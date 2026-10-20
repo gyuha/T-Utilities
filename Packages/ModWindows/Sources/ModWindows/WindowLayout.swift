@@ -19,19 +19,24 @@ enum WindowLayout {
 
     enum ResizeEdge: Sendable { case top, bottom }
 
-    /// Which horizontal edge a drag starting at `point` grabs, if any. macOS' resize area straddles the border.
-    static func resizeEdge(at point: CGPoint, window: CGRect, band: CGFloat = 6) -> ResizeEdge? {
-        guard point.x >= window.minX - band, point.x <= window.maxX + band else { return nil }
-        if abs(point.y - window.maxY) <= band { return .top }
-        if abs(point.y - window.minY) <= band { return .bottom }
+    /// Which horizontal edge a drag starting at `point` grabs, if any. macOS' resize area straddles the border;
+    /// inside the window it is only a few points deep, deeper than that is the title bar (a move).
+    static func resizeEdge(at point: CGPoint, window: CGRect, outside: CGFloat = 6, inside: CGFloat = 3) -> ResizeEdge? {
+        guard point.x >= window.minX - outside, point.x <= window.maxX + outside else { return nil }
+        if point.y <= window.maxY + outside, point.y >= window.maxY - inside { return .top }
+        if point.y >= window.minY - outside, point.y <= window.minY + inside { return .bottom }
         return nil
     }
 
-    /// Cursor has reached the menu bar / Dock side of the screen for the edge being dragged.
-    static func isAtScreenEdge(_ point: CGPoint, edge: ResizeEdge, visibleFrame: CGRect, threshold: CGFloat = 2) -> Bool {
+    /// Cursor is at the menu bar / Dock side of the window's screen. `inside` makes it trigger slightly before
+    /// the edge; `outside` keeps it active past the edge, e.g. onto a display stacked above or below.
+    static func isAtScreenEdge(
+        _ point: CGPoint, edge: ResizeEdge, screen: Screen, inside: CGFloat = 8, outside: CGFloat = 40
+    ) -> Bool {
+        guard point.x >= screen.frame.minX - outside, point.x <= screen.frame.maxX + outside else { return false }
         switch edge {
-        case .top: point.y >= visibleFrame.maxY - threshold
-        case .bottom: point.y <= visibleFrame.minY + threshold
+        case .top: return point.y >= screen.visibleFrame.maxY - inside && point.y <= screen.frame.maxY + outside
+        case .bottom: return point.y <= screen.visibleFrame.minY + inside && point.y >= screen.frame.minY - outside
         }
     }
 

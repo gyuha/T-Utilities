@@ -9,6 +9,8 @@ final class EdgeResizeSnap {
         let window: AXWindow
         let edge: WindowLayout.ResizeEdge
         let startFrame: CGRect
+        /// The window's screen when the drag started; the edge test stays relative to it.
+        let screen: WindowLayout.Screen
     }
 
     /// A window we filled, so moving it restores its previous size like macOS' tiling does.
@@ -77,17 +79,17 @@ final class EdgeResizeSnap {
     }
 
     private func update(_ tracking: Tracking, cursor: CGPoint) {
-        guard let screen = NSScreen.screens.first(where: { $0.frame.contains(cursor) }),
-              WindowLayout.isAtScreenEdge(cursor, edge: tracking.edge, visibleFrame: screen.visibleFrame) else {
+        guard WindowLayout.isAtScreenEdge(cursor, edge: tracking.edge, screen: tracking.screen) else {
             pendingTarget = nil
             preview.hide()
             return
         }
         guard pendingTarget == nil, let current = Self.cocoaFrame(of: tracking.window) else { return }
-        // Only a real top/bottom resize (same width, height changing), not a title-bar move along the top.
+        // A top/bottom resize never changes x or width; a move usually does. The height may be unchanged
+        // (window already at the edge, or dragged away and back), so it isn't required to change.
         guard abs(current.width - tracking.startFrame.width) <= 2,
-              abs(current.height - tracking.startFrame.height) > 2 else { return }
-        let target = WindowLayout.verticalFill(current, visibleFrame: screen.visibleFrame)
+              abs(current.minX - tracking.startFrame.minX) <= 2 else { return }
+        let target = WindowLayout.verticalFill(current, visibleFrame: tracking.screen.visibleFrame)
         pendingTarget = target
         preview.show(from: current, to: target)
     }
@@ -137,7 +139,9 @@ final class EdgeResizeSnap {
             let probe = CGPoint(x: point.x, y: primaryMaxY - (point.y + dy))
             guard let window = AXWindow.at(probe), window.isResizable, let frame = cocoaFrame(of: window),
                   let edge = WindowLayout.resizeEdge(at: point, window: frame) else { continue }
-            return Tracking(window: window, edge: edge, startFrame: frame)
+            let screens = NSScreen.screens.map { WindowLayout.Screen(frame: $0.frame, visibleFrame: $0.visibleFrame) }
+            guard let screen = WindowLayout.screenContaining(frame, in: screens) else { return nil }
+            return Tracking(window: window, edge: edge, startFrame: frame, screen: screen)
         }
         return nil
     }
