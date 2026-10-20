@@ -152,6 +152,8 @@ CopyNinja의 클립보드 기능을 출발점으로, 개별 앱으로 쓰던 유
   - 6k LOC짜리 Logitech 메타데이터 DB는 **필요 없음**.
 - G304가 정확히 어떤 기능 번호를 쓰는지는 소스로 확인할 수 없음. 실기기에서 검증해야 함 (Solaar 기준으로는 0x1000으로 추정).
 
+**P5 결과 (2026-10-20 실측):** G304는 `0x1000 BatteryStatus`(슬롯 1, HID++ 4.2). 가속은 공개 simple client로, 속도(`HIDPointerResolution`)는 비공개 `IOHIDEventSystemClientCreate`로만 설정됨. 측면 버튼·스크롤·복원 모두 사용자 확인 완료.
+
 **P5 결정 사항 (2026-10-19):** 마우스를 연결할 때까지 P5를 보류하고 P6 Cable을 먼저 진행함.
 - 사용자의 LinearMouse 설정(`~/.config/linearmouse/linearmouse.json`, 수신기 `0x046d:0xc53f`)을 기본값으로 이어받음.
   - 포인터: 가속 0.9, 속도 0.08.
@@ -456,7 +458,7 @@ macOS 메뉴의 서브메뉴처럼, Cable 행에 호버하거나 클릭하면 **
 ### B-1. 모듈 구조
 - 앱 셸(`App/Sources`): `AppDelegate` → `ModuleRegistry`(TUCore) + `StatusItemController`(NSStatusItem + NSPopover, SwiftUI `PopoverView`) + `SettingsWindowController`(첫 표시 때 생성, 창은 닫아도 유지 `isReleasedWhenClosed=false`) + `Updater`.
 - 모듈 = 로컬 SPM 패키지, `TUModule` 프로토콜. 레지스트리가 활성화 시 인스턴스 생성 → `start()`, 비활성화 시 `stop()` → 참조 해제 → 2초 뒤 weak 참조로 누수 검사(로그).
-- 모듈: Clipboard(CopyNinja 이식), Awake(+ `AwakeGuard` 헬퍼 프로세스), Clock, Windows(Rectangle 일부), Cable(WhatCable vendored subtree). Mouse(P5)는 미구현.
+- 모듈: Clipboard(CopyNinja 이식), Awake(+ `AwakeGuard` 헬퍼 프로세스), Clock, Windows(Rectangle 일부), Cable(WhatCable vendored subtree). Mouse(`ModMouse`, 기본 꺼짐): 포인터 속성(비공개 admin HID 클라이언트), 세션 이벤트 탭(측면 버튼·휠), HID++ 배터리.
 
 ### B-2. 주기 작업 · 상주 리소스
 | 위치 | 주기 | 내용 | 비고 |
@@ -467,6 +469,8 @@ macOS 메뉴의 서브메뉴처럼, Cable 행에 호버하거나 클릭하면 **
 | `AwakeGuard` (별도 프로세스) | poll 30 s | stdin EOF/무응답 시 복원 후 종료 | |
 | `ClockModule` | 분 경계 1회 | 메뉴바 텍스트 갱신 | |
 | `CableModule` | 15 s + 팝오버 열 때 | WhatCable `snapshot()` 전체(IOKit 레지스트리 순회) + `PortReport` 빌드, 요약 계산 시 `CableSnapshotContext` 2회 생성 | 무거운 편. 이벤트 기반(WhatCable watcher) 전환 또는 주기 완화 후보 |
+| `MouseModule` (켜져 있을 때만) | 이벤트 | 세션 이벤트 탭(otherMouse·scrollWheel, 메인 런루프) — 모든 휠/측면 버튼 이벤트가 통과 | 콜백은 짧은 분기만 |
+| `MouseModule` 배터리 | 300 s + 장치 알림 | HID++ 요청(리시버 경유, 1 s 타임아웃) | 장치 연결 변경 시 1 s 뒤 재적용 |
 | `Updater` | 1 h 확인 → 실제 네트워크는 24 h 1회 | GitHub API | |
 | 설정 화면(권한/Clipboard/Windows 페인) | 1 s | TCC 권한 폴링 | 해당 뷰가 보일 때만 (`.task`) |
 | `StatusItemController` | 이벤트 | 로컬 keyDown 모니터(앱 내부 이벤트만) | |
@@ -479,7 +483,7 @@ macOS 메뉴의 서브메뉴처럼, Cable 행에 호버하거나 클릭하면 **
 - 비활성화 시 해제 검증: P0에서 109→47 MB 확인. 이후 추가된 모듈은 누수 검사 로그만 존재.
 
 ### B-4. 알려진 한계 (리뷰 범위 밖이지만 참고)
-- P4(외부 모니터 Windows) · P5(Mouse) 하드웨어 테스트 미실시.
+- P4(외부 모니터 Windows) · P5(Mouse) 하드웨어 테스트 완료 (2026-10-20).
 - Windows: Dock/Stage Manager 보정 없음.
 - 업데이트 설치는 로컬에서 엔드투엔드 미검증(첫 릴리스 이후 확인 필요).
 - Release 빌드는 arm64 전용.

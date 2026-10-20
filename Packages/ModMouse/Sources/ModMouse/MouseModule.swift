@@ -215,6 +215,23 @@ private struct MouseSettingsView: View {
 
     var body: some View {
         Form {
+            Section("배터리") {
+                if module.batteries.isEmpty {
+                    Text("Logitech HID++ 장치를 찾지 못했습니다 (마우스가 잠들어 있으면 움직인 뒤 새로 고침)")
+                        .foregroundStyle(.secondary)
+                }
+                ForEach(module.batteries) { info in
+                    LabeledContent(info.name) {
+                        HStack(spacing: 4) {
+                            Image(systemName: MouseModule.batterySymbol(info.reading))
+                                .foregroundStyle((info.reading.level ?? 100) <= 15 ? .red : .secondary)
+                            Text(info.reading.level.map { "\($0)%" } ?? "—").monospacedDigit()
+                        }
+                    }
+                }
+                Button("새로 고침") { Task { await module.refreshBattery() } }
+            }
+
             if !module.tapInstalled {
                 Section {
                     LabeledContent {
@@ -275,18 +292,6 @@ private struct MouseSettingsView: View {
                     .font(.caption).foregroundStyle(.secondary)
             }
 
-            Section("배터리") {
-                if module.batteries.isEmpty {
-                    Text("Logitech HID++ 장치를 찾지 못했습니다 (마우스가 잠들어 있으면 움직인 뒤 새로 고침)")
-                        .foregroundStyle(.secondary)
-                }
-                ForEach(module.batteries) { info in
-                    LabeledContent(info.name) {
-                        Text(info.reading.level.map { "\($0)%" } ?? "—").monospacedDigit()
-                    }
-                }
-                Button("새로 고침") { Task { await module.refreshBattery() } }
-            }
         }
         .formStyle(.grouped)
     }
