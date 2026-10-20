@@ -125,3 +125,16 @@ struct RestoreOnDragTests {
         #expect(restored.maxY == filled.maxY)
     }
 }
+
+struct FilledMoveTests {
+    let filled = CGRect(x: 200, y: 60, width: 800, height: 897)
+
+    @Test func sidewaysKeepsFilledVerticalRestores() {
+        let slid = filled.offsetBy(dx: 300, dy: 0)
+        #expect(WindowLayout.isStillFilled(slid, filled: filled))
+        #expect(!WindowLayout.movedVertically(slid, filled: filled))
+        #expect(!WindowLayout.movedVertically(filled.offsetBy(dx: 300, dy: -4), filled: filled))  // jitter
+        #expect(WindowLayout.movedVertically(filled.offsetBy(dx: 0, dy: -40), filled: filled))
+        #expect(!WindowLayout.isStillFilled(CGRect(x: 200, y: 60, width: 800, height: 600), filled: filled))
+    }
+}

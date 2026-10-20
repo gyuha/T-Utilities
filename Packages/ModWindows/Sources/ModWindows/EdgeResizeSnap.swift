@@ -94,19 +94,18 @@ final class EdgeResizeSnap {
         preview.show(from: current, to: target)
     }
 
-    /// A filled window being dragged by its title bar: once it actually moves, give back its previous size,
-    /// keeping the cursor at the same relative spot across the title bar.
+    /// A filled window being dragged by its title bar: sideways it stays filled; once it moves up or down,
+    /// give back its previous size, keeping the cursor at the same relative spot across the title bar.
     private func restoreIfMoved(_ candidate: (entry: Filled, window: AXWindow), cursor: CGPoint) {
         guard let current = Self.cocoaFrame(of: candidate.window) else { return }
-        guard current.size == candidate.entry.filledFrame.size || WindowLayout.isSameFrame(
-            CGRect(origin: current.origin, size: candidate.entry.filledFrame.size), current
-        ) else {
+        guard abs(current.width - candidate.entry.filledFrame.width) <= 2,
+              abs(current.height - candidate.entry.filledFrame.height) <= 2 else {
             // Resized by other means since: forget it.
             restoreCandidate = nil
             filled.removeAll { CFEqual($0.window, candidate.entry.window) }
             return
         }
-        guard !WindowLayout.isSameFrame(current, candidate.entry.filledFrame),
+        guard WindowLayout.movedVertically(current, filled: candidate.entry.filledFrame),
               let primaryMaxY = NSScreen.screens.first?.frame.maxY else { return }
         restoreCandidate = nil
         filled.removeAll { CFEqual($0.window, candidate.entry.window) }
@@ -120,7 +119,7 @@ final class EdgeResizeSnap {
         guard !filled.isEmpty, let primaryMaxY = NSScreen.screens.first?.frame.maxY,
               let window = AXWindow.at(CGPoint(x: point.x, y: primaryMaxY - point.y)),
               let entry = filled.first(where: { CFEqual($0.window, window.element) }),
-              let frame = Self.cocoaFrame(of: window), WindowLayout.isSameFrame(frame, entry.filledFrame) else { return nil }
+              let frame = Self.cocoaFrame(of: window), WindowLayout.isStillFilled(frame, filled: entry.filledFrame) else { return nil }
         return (entry, window)
     }
 

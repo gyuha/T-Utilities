@@ -40,6 +40,17 @@ enum WindowLayout {
         }
     }
 
+    /// A height-filled window is still "filled" wherever it sits horizontally: same size, same vertical span.
+    static func isStillFilled(_ window: CGRect, filled: CGRect, tolerance: CGFloat = 2) -> Bool {
+        abs(window.width - filled.width) <= tolerance && abs(window.height - filled.height) <= tolerance
+            && abs(window.minY - filled.minY) <= tolerance
+    }
+
+    /// Sliding a filled window sideways keeps its height; moving it up/down (beyond hand jitter) restores it.
+    static func movedVertically(_ window: CGRect, filled: CGRect, threshold: CGFloat = 10) -> Bool {
+        abs(window.minY - filled.minY) > threshold
+    }
+
     /// Previous size for a filled window that started moving: top edge stays (title bar under the cursor) and
     /// the cursor keeps its relative horizontal position, as macOS does when dragging a tiled window away.
     static func restoredOnDrag(_ window: CGRect, originalSize: CGSize, cursorX: CGFloat) -> CGRect {
