@@ -10,7 +10,7 @@ final class ModifierDragController {
     private enum Kind { case move, resize(ModifierDragLogic.Region) }
 
     private struct Session {
-        let window: AXWindow
+        let writer: FrameWriter
         let kind: Kind
         let startFrame: CGRect
         let startCursor: CGPoint
@@ -53,6 +53,7 @@ final class ModifierDragController {
         if let source { CFRunLoopRemoveSource(CFRunLoopGetMain(), source, .commonModes) }
         tap = nil
         source = nil
+        session?.writer.finish()
         session = nil
     }
 
@@ -63,6 +64,7 @@ final class ModifierDragController {
             if let tap { CGEvent.tapEnable(tap: tap, enable: true) }
             return false
         case .leftMouseDown, .rightMouseDown:
+            session?.writer.finish()
             session = nil
             guard modifiers.matches(event.flags), let started = begin(isResize: type == .rightMouseDown, at: event.location) else {
                 return false
@@ -74,8 +76,9 @@ final class ModifierDragController {
             update(session, cursor: event.location)
             return true
         case .leftMouseUp, .rightMouseUp:
-            guard session != nil else { return false }
-            session = nil
+            guard let session else { return false }
+            session.writer.finish()
+            self.session = nil
             return true
         default:
             return false
@@ -87,19 +90,89 @@ final class ModifierDragController {
         if isResize, !window.isResizable { return nil }
         _ = AXUIElementPerformAction(window.element, kAXRaiseAction as CFString)
         let kind: Kind = isResize ? .resize(ModifierDragLogic.region(of: cursor, in: frame)) : .move
-        return Session(window: window, kind: kind, startFrame: frame, startCursor: cursor)
+        let writer = FrameWriter(element: window.element, app: window.app, startFrame: frame)
+        return Session(writer: writer, kind: kind, startFrame: frame, startCursor: cursor)
     }
 
     private func update(_ session: Session, cursor: CGPoint) {
         let delta = CGPoint(x: cursor.x - session.startCursor.x, y: cursor.y - session.startCursor.y)
         switch session.kind {
         case .move:
-            session.window.set(position: ModifierDragLogic.moved(session.startFrame, by: delta).origin)
+            session.writer.submit(ModifierDragLogic.moved(session.startFrame, by: delta))
         case .resize(let region):
-            let target = ModifierDragLogic.resized(session.startFrame, region: region, by: delta)
-            // Size first, then position: the order keeps the anchored corner fixed in apps that clamp sizes.
-            session.window.set(size: target.size)
-            session.window.set(position: target.origin)
+            session.writer.submit(ModifierDragLogic.resized(session.startFrame, region: region, by: delta))
         }
+    }
+}
+
+/// Applies window frames off the main thread. Each Accessibility write is a synchronous round trip to the
+/// target app, so doing them inside the event tap stalls the whole mouse; here only the newest frame is kept
+/// and unchanged size/position are not rewritten.
+private final class FrameWriter: @unchecked Sendable {
+    private static let enhancedUserInterface = "AXEnhancedUserInterface"
+
+    private let element: AXUIElement
+    private let app: AXUIElement
+    private let queue = DispatchQueue(label: "com.taegyu.tutilities.modifier-drag", qos: .userInteractive)
+    private let lock = NSLock()
+    private var pending: CGRect?
+    private var scheduled = false
+    private var applied: CGRect
+    private let restoreEnhanced: Bool
+
+    /// AXEnhancedUserInterface makes AX writes animate, which is what makes live resizing crawl in some apps.
+    init(element: AXUIElement, app: AXUIElement, startFrame: CGRect) {
+        self.element = element
+        self.app = app
+        applied = startFrame
+        var value: CFTypeRef?
+        let enabled = AXUIElementCopyAttributeValue(app, Self.enhancedUserInterface as CFString, &value) == .success
+            && (value as? Bool) == true
+        restoreEnhanced = enabled
+        if enabled { AXUIElementSetAttributeValue(app, Self.enhancedUserInterface as CFString, kCFBooleanFalse) }
+    }
+
+    func submit(_ frame: CGRect) {
+        lock.lock()
+        pending = frame
+        let start = !scheduled
+        scheduled = true
+        lock.unlock()
+        if start { queue.async { self.drain() } }
+    }
+
+    func finish() {
+        guard restoreEnhanced else { return }
+        queue.async { AXUIElementSetAttributeValue(self.app, Self.enhancedUserInterface as CFString, kCFBooleanTrue) }
+    }
+
+    private func drain() {
+        while true {
+            lock.lock()
+            guard let target = pending else {
+                scheduled = false
+                lock.unlock()
+                return
+            }
+            pending = nil
+            lock.unlock()
+            apply(target)
+        }
+    }
+
+    private func apply(_ target: CGRect) {
+        if target.size != applied.size {
+            var size = target.size
+            if let value = AXValueCreate(.cgSize, &size) {
+                AXUIElementSetAttributeValue(element, kAXSizeAttribute as CFString, value)
+            }
+        }
+        if target.origin != applied.origin {
+            var origin = target.origin
+            if let value = AXValueCreate(.cgPoint, &origin) {
+                AXUIElementSetAttributeValue(element, kAXPositionAttribute as CFString, value)
+            }
+        }
+        applied = target
     }
 }
