@@ -10,6 +10,7 @@ Each module can be turned on/off and reordered in Settings; disabled modules are
 | Clock | Second time zone next to the menu bar icon (`NY 00:33`) | — |
 | Windows | Maximize, next/previous display | [Rectangle](https://github.com/rxhanson/Rectangle) |
 | Cable | USB-C port, cable and charger diagnostics | [WhatCable](https://github.com/darrylmorley/whatcable) |
+| Mouse | Pointer speed/acceleration, side buttons → Mission Control / Show Desktop, wheel reverse/linear, Logitech battery (HID++) | [LinearMouse](https://github.com/linearmouse/linearmouse) |
 
 Install: `brew install --cask mordol/tap/t-utilities`, or see [INSTALL.md](INSTALL.md). Plan and design notes: [PLAN.md](PLAN.md).
 
