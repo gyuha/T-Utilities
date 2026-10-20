@@ -49,7 +49,7 @@ struct GeneralPane: View {
                         Button("설치 후 다시 실행", action: updater.install)
                     } else {
                         Button("지금 확인") { Task { await updater.check() } }
-                            .disabled(updater.state == .checking)
+                            .disabled(updater.state == .checking || updater.isInstalling)
                     }
                 }
             }

@@ -31,6 +31,11 @@ final class Updater {
     let currentVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
     @ObservationIgnored private var scheduler: Task<Void, Never>?
 
+    var isInstalling: Bool {
+        if case .installing = state { return true }
+        return false
+    }
+
     var availableRelease: Release? {
         if case .available(let release) = state { return release }
         return nil
@@ -154,7 +159,9 @@ final class Updater {
         relaunch.executableURL = URL(filePath: "/bin/sh")
         relaunch.arguments = ["-c", "while kill -0 \(pid) 2>/dev/null; do sleep 0.2; done; /usr/bin/open \"$0\"", target.path]
         try relaunch.run()
-        NSApp.terminate(nil)
+        // Not directly: we're inside a main-actor Task, and terminate's `.terminateLater` wait would block the
+        // main actor that the module shutdown needs (deadlock). A run-loop perform behaves like Quit from a menu.
+        NSApp.perform(#selector(NSApplication.terminate(_:)), with: nil, afterDelay: 0)
     }
 
     private static func run(_ tool: String, _ arguments: [String]) throws {
