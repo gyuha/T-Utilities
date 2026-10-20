@@ -126,10 +126,13 @@ sudo powermetrics --samplers tasks -i 5000 -n 6 | grep -i t-utilities   # wakeup
    - OCR(Vision `VNRecognizeTextRequest`)은 별도 원인: 앱과 같은 설정을 별도 프로세스로 돌리면 peak 233~291 MB(`.fast`·언어 보정 끔·영어만이어도 263~283 MB, 1200×200 이미지도 162 MB → Vision 고정 비용). 끝나면 반환되고 약 15 MB 남음. 앱 안에서는 OCR 시 464~466 MB까지 기록(위 그래픽 급증과 겹친 것으로 보임). 4K 이미지 복사(캡처 경로)는 +33 MB(비트맵 1장).
    - 실사용 후 상주 메모리는 17 → 80 MB(그중 Malloc Small 38 MB) — §6-4에서 따로 볼 것.
    - VisionKit `ImageAnalyzer`는 인식을 `mediaanalysisd`에서 하므로 호출 프로세스 peak 61 MB(데몬 +45 MB), 1.2~1.9 s. 하지만 같은 이미지에서 문자 오류율 약 3~7%(Vision `.accurate` 0.43%). Preview 라이브 텍스트도 VisionKitCore → Vision·TextRecognition·MediaAnalysisServices를 링크하나, 실제 경로는 사용자 동작(호버)이 필요해 셸에서 확인 못 함.
+   - **결정:** 정확도 때문에 Vision 유지. OCR을 앱 번들 안 헬퍼 프로세스로 옮기는 안(상주 17 MB·일시 250 MB 제거)도 보류 — 셸에서 새 프로세스로 돌리면 매번 11~14 s 걸려(앱 안은 1~2 s) 지연 위험.
 2. **Cable 15 s 스냅샷** — 팝오버가 닫혀 있을 때도 IOKit 전체 순회. 후보: 팝오버/메뉴가 열릴 때만 갱신, 요약용 `CableSnapshotContext` 중복 생성 제거, 스냅샷이 메인 스레드에서 도는지 확인 후 백그라운드로. WhatCable의 static watcher 상태가 모듈을 꺼도 남는 문제(알려진 한계)도 메모리에 영향.
    - **결과 (2026-10-20):** `sample` 60 s 기준 메인 스레드 사용 218 ms 중 97%가 `snapshot()`(그중 `DisplayTimingReader.readNodes` 약 55%). 요약용 `CableSnapshotContext` 중복은 1% 미만이라 그대로 둠. 백그라운드 이전은 vendored WhatCable 수정이 필요해 제외. **주기 갱신 제거 → 시작 1회 + 팝오버 열 때 + 설정 페이지 표시 시** 적용: cable CPU 0.325 → 0.000 %, all 0.425 → 0.108 % (§7.1).
 3. **Clipboard 0.5 s 폴링** — 타이머 leeway 지정, 폴링 간격 조정. 복사 감지 지연(체감)과의 트레이드오프.
 4. **설정창·팝오버 유지 비용** — 설정창은 닫아도 SwiftUI 뷰 트리가 남음. 닫을 때 해제하면 메모리 절약, 다시 열 때 비용 증가.
+   - **결과 (2026-10-20):** 새로 띄운 앱(13 MB)에서 단계별 상주 증가: 팝오버 첫 열기 +31 MB, 설정창 첫 열기(모든 페이지) +19 MB, OCR 첫 실행 +17 MB → 80 MB. 모두 첫 1회만 늘고 반복해도 그대로(팝오버 5회·설정창 재열기 0 MB). 힙 살아 있는 객체 6.6 → 63 MB(타입 없는 malloc +25 MB, TextRecognition·Espresso 약 7.5 MB — `CRImageReaderOutput` 19,828개, Swift 메타데이터·SwiftUI 그래프 등). `leaks`는 시스템 XPC(`com.apple.linkd.autoShortcut`) 20 KB뿐 → 누수 아님, 프레임워크 초기화·캐시.
+   - 설정창을 닫을 때 해제(`willCloseNotification` → `window = nil`)해 보니 창 객체는 해제되지만 줄어든 건 약 4 MB(닫은 뒤 62~63 → 58.7~59.4 MB). 나머지 약 15 MB는 SwiftUI 쪽이 유지. 효과가 작아 **되돌림**. 팝오버도 같은 이유로 해제하지 않음(자주 열어 재생성 비용이 더 큼).
 5. **Clipboard 이미지 캐시** — 썸네일 300개·원본 20개 상한이 실제 메모리에 얼마인지. 바이트 기준 `totalCostLimit` 검토.
 6. **Mouse 3 s 탭 감시** — WindowServer IPC 비용 측정. 간격을 늘리면 권한 상실 시 입력이 멈추는 시간이 늘어남(§8 제약).
 7. **Windows 전역 마우스 모니터** — 모든 좌클릭 드래그마다 AX 조회 1회. 비용이 보이면 조회를 가장자리 근처에서 시작한 드래그로 제한.
