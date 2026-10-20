@@ -10,7 +10,7 @@ Each module can be turned on/off and reordered in Settings; disabled modules are
 | Clipboard | Clipboard history, search, quick slots (⌘1–0), OCR, Quick Look, optional paste-on-Return | [CopyNinja](https://github.com/dwyi84/CopyNinja) |
 | Awake | Keep the Mac awake manually or while AI coding agents (Claude, Codex, Cursor, Paseo) work — also with the lid closed | idea from [eclam](https://github.com/jadhvank/eclam) |
 | Clock | Second time zone next to the menu bar icon (`NY 00:33`) | — |
-| Windows | Maximize, next/previous display | [Rectangle](https://github.com/rxhanson/Rectangle) |
+| Windows | Maximize, next/previous display, hold ⌥ and drag anywhere to move (right-drag to resize) | [Rectangle](https://github.com/rxhanson/Rectangle), [easy-move-resize](https://github.com/dmarcotte/easy-move-resize) |
 | Cable | USB-C port, cable and charger diagnostics | [WhatCable](https://github.com/darrylmorley/whatcable) |
 | Mouse | Pointer speed/acceleration, side buttons → Mission Control / Show Desktop, wheel reverse/linear, Logitech battery (HID++) | [LinearMouse](https://github.com/linearmouse/linearmouse) |
 

@@ -1,0 +1,119 @@
+version: "3"
+
+vars:
+  BUNDLE_ID: com.taegyu.tutilities
+  PROJECT: T-Utilities.xcodeproj
+  DEBUG_APP: build/DerivedData/Build/Products/Debug/T-Utilities.app
+  RELEASE_APP: build/ReleaseDerivedData/Build/Products/Release/T-Utilities.app
+
+tasks:
+  default:
+    cmds:
+      - task --list
+    silent: true
+
+  generate:
+    desc: Generate the Xcode project from project.yml
+    preconditions:
+      - sh: command -v xcodegen
+        msg: "xcodegen is not installed — run: brew install xcodegen"
+    cmds:
+      - xcodegen generate
+    sources:
+      - project.yml
+    generates:
+      - "{{.PROJECT}}/project.pbxproj"
+
+  cert:
+    desc: Create the self-signed "T-Utilities Dev" code-signing certificate in the login keychain
+    status:
+      - security find-identity -p codesigning | grep -q "T-Utilities Dev"
+    cmds:
+      - |
+        set -e
+        dir=$(mktemp -d)
+        trap 'rm -rf "$dir"' EXIT
+        cat > "$dir/openssl.cnf" <<'EOF'
+        [req]
+        distinguished_name = dn
+        x509_extensions = ext
+        prompt = no
+        [dn]
+        CN = T-Utilities Dev
+        [ext]
+        keyUsage = critical, digitalSignature
+        extendedKeyUsage = critical, codeSigning
+        basicConstraints = critical, CA:false
+        EOF
+        /usr/bin/openssl req -x509 -newkey rsa:2048 -nodes -days 3650 \
+          -config "$dir/openssl.cnf" -keyout "$dir/key.pem" -out "$dir/cert.pem"
+        /usr/bin/openssl pkcs12 -export -inkey "$dir/key.pem" -in "$dir/cert.pem" \
+          -out "$dir/cert.p12" -passout pass:tutilities
+        security import "$dir/cert.p12" -k ~/Library/Keychains/login.keychain-db \
+          -P tutilities -T /usr/bin/codesign
+        # Asks for your password: a self-signed certificate is only a valid identity once trusted for code signing.
+        security add-trusted-cert -r trustRoot -p codeSign -k ~/Library/Keychains/login.keychain-db "$dir/cert.pem"
+        security find-identity -v -p codesigning | grep "T-Utilities Dev"
+
+  quit:
+    desc: Quit the running app (never kill it — see CLAUDE.md)
+    cmds:
+      - osascript -e 'quit app id "{{.BUNDLE_ID}}"' || true
+    silent: true
+
+  build:
+    desc: Debug build
+    deps: [generate, quit]
+    set: [pipefail]
+    preconditions:
+      - sh: xcodebuild -version
+        msg: "Xcode is required (Command Line Tools are not enough) — install Xcode, then: sudo xcode-select -s /Applications/Xcode.app"
+    cmds:
+      - xcodebuild -project {{.PROJECT}} -scheme T-Utilities -configuration Debug -derivedDataPath build/DerivedData build | grep -E "error:|BUILD"
+
+  run:
+    desc: Build (Debug) and launch the app
+    cmds:
+      - task: build
+      - open {{.DEBUG_APP}}
+
+  release-build:
+    desc: Release build (use this for performance measurements)
+    deps: [generate, quit]
+    set: [pipefail]
+    preconditions:
+      - sh: xcodebuild -version
+        msg: "Xcode is required (Command Line Tools are not enough) — install Xcode, then: sudo xcode-select -s /Applications/Xcode.app"
+    cmds:
+      - xcodebuild -project {{.PROJECT}} -scheme T-Utilities -configuration Release -derivedDataPath build/ReleaseDerivedData build | grep -E "error:|BUILD"
+
+  run-release:
+    desc: Release build and launch
+    cmds:
+      - task: release-build
+      - open {{.RELEASE_APP}}
+
+  test:
+    desc: Run the tests of every package (task test -- ModClipboard to run one)
+    cmds:
+      - |
+        if [ -n "{{.CLI_ARGS}}" ]; then
+          swift test --package-path Packages/{{.CLI_ARGS}}
+        else
+          for p in Packages/*/; do echo "== $p"; swift test --package-path "$p" || exit 1; done
+        fi
+
+  measure:
+    desc: Measure CPU/memory per module configuration (args after --, e.g. task measure -- none clipboard)
+    cmds:
+      - APP={{.RELEASE_APP}} Scripts/measure.sh {{.CLI_ARGS}}
+
+  release:
+    desc: Publish a release (task release -- 0.2.0 [--dry])
+    cmds:
+      - Scripts/release.sh {{.CLI_ARGS}}
+
+  clean:
+    desc: Remove build output and the generated Xcode project
+    cmds:
+      - rm -rf build {{.PROJECT}}

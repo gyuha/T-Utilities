@@ -35,6 +35,7 @@ public final class WindowsModule: TUModule {
 
     @ObservationIgnored private let settings: ModuleSettings
     @ObservationIgnored private let edgeSnap = EdgeResizeSnap()
+    @ObservationIgnored private let modifierDragController = ModifierDragController()
 
     /// Drag a window's top/bottom edge to the screen edge → full height (Windows-style).
     var edgeVerticalFill: Bool {
@@ -44,17 +45,37 @@ public final class WindowsModule: TUModule {
         }
     }
 
+    /// Hold the modifier and drag anywhere in a window to move it, right-drag to resize (easy-move-resize).
+    var modifierDrag: Bool {
+        didSet {
+            settings.set(modifierDrag, for: "modifierDrag")
+            modifierDrag ? modifierDragController.start() : modifierDragController.stop()
+        }
+    }
+
+    var modifierDragKeys: DragModifiers {
+        didSet {
+            settings.set(modifierDragKeys.rawValue, for: "modifierDragKeys")
+            modifierDragController.modifiers = modifierDragKeys
+        }
+    }
+
     public init(context: ModuleContext) {
         settings = context.settings
         edgeVerticalFill = context.settings.value("edgeVerticalFill", default: true)
+        modifierDrag = context.settings.value("modifierDrag", default: true)
+        modifierDragKeys = .stored(context.settings.value("modifierDragKeys", default: DragModifiers.default.rawValue))
     }
 
     public func start() async throws {
         if edgeVerticalFill { edgeSnap.start() }
+        modifierDragController.modifiers = modifierDragKeys
+        if modifierDrag { modifierDragController.start() }
     }
 
     public func stop() async {
         edgeSnap.stop()
+        modifierDragController.stop()
     }
 
     public var status: ModuleStatus {
@@ -143,6 +164,19 @@ enum SystemTopEdgeFill {
     }
 }
 
+private struct ModifierKeyOption: Identifiable {
+    let key: DragModifiers
+    let label: String
+    var id: Int { key.rawValue }
+
+    static let all = [
+        ModifierKeyOption(key: .control, label: "⌃"),
+        ModifierKeyOption(key: .option, label: "⌥"),
+        ModifierKeyOption(key: .shift, label: "⇧"),
+        ModifierKeyOption(key: .command, label: "⌘"),
+    ]
+}
+
 private struct WindowsSettingsView: View {
     @Bindable var module: WindowsModule
     @State private var granted = Permission.accessibility.isGranted
@@ -166,6 +200,32 @@ private struct WindowsSettingsView: View {
                 Text("드래그")
             } footer: {
                 Text("창의 위나 아래 가장자리를 잡고 메뉴 막대나 Dock 쪽 끝까지 끌면 미리보기가 나타나고, 놓으면 가로 크기는 그대로 높이만 화면에 맞춥니다.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            Section {
+                Toggle("수정키를 누르고 창 어디서든 끌어 이동·크기 조절", isOn: $module.modifierDrag)
+                if module.modifierDrag {
+                    LabeledContent("수정키") {
+                        HStack(spacing: 12) {
+                            ForEach(ModifierKeyOption.all) { option in
+                                Toggle(option.label, isOn: Binding(
+                                    get: { module.modifierDragKeys.contains(option.key) },
+                                    set: { on in
+                                        var keys = module.modifierDragKeys
+                                        if on { keys.insert(option.key) } else { keys.remove(option.key) }
+                                        // At least one key stays armed, or every plain click would be swallowed.
+                                        if !keys.isEmpty { module.modifierDragKeys = keys }
+                                    }
+                                ))
+                                .toggleStyle(.checkbox)
+                            }
+                        }
+                    }
+                }
+            } header: {
+                Text("수정키 드래그")
+            } footer: {
+                Text("수정키를 누른 채 창 안을 끌면 이동하고, 오른쪽 버튼으로 끌면 커서가 있는 모서리 쪽으로 크기를 조절합니다. 수정키를 누른 클릭은 아래 앱에 전달되지 않습니다. easy-move-resize를 참고했습니다.")
                     .font(.caption).foregroundStyle(.secondary)
             }
             Section {
