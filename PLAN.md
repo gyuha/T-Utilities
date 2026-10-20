@@ -453,6 +453,8 @@ macOS 메뉴의 서브메뉴처럼, Cable 행에 호버하거나 클릭하면 **
 
 ## 부록 B. CPU · 메모리 최적화 리뷰용 요약 (P7 시점, v0.1.0)
 
+> **최신 내용은 [Docs/OPTIMIZATION.md](Docs/OPTIMIZATION.md)** (v0.1.2 기준, 측정 스크립트 `Scripts/measure.sh` 포함). 아래는 v0.1.0 시점 기록.
+
 별도 세션의 최적화 리뷰를 위한 입력 자료. 기준 측정(Debug 빌드, 모든 기본 모듈 활성, 유휴): `footprint` phys_footprint ≈ 48 MB, CPU 0.0%.
 
 ### B-1. 모듈 구조
