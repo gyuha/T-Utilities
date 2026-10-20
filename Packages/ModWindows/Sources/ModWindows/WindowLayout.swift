@@ -9,6 +9,12 @@ enum WindowLayout {
         let visibleFrame: CGRect
     }
 
+    /// AX frames come back rounded; a couple of points of slack still means "unchanged".
+    static func isSameFrame(_ a: CGRect, _ b: CGRect, tolerance: CGFloat = 2) -> Bool {
+        abs(a.minX - b.minX) <= tolerance && abs(a.minY - b.minY) <= tolerance
+            && abs(a.width - b.width) <= tolerance && abs(a.height - b.height) <= tolerance
+    }
+
     enum Action: Sendable {
         case maximize, nextDisplay, previousDisplay
     }

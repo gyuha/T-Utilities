@@ -76,3 +76,12 @@ struct WindowLayoutTests {
         #expect(WindowLayout.flipped(flipped, primaryScreenMaxY: 982) == rect)
     }
 }
+
+struct RestoreFrameTests {
+    @Test func toleratesRoundingButNotMoves() {
+        let frame = CGRect(x: 0, y: 25, width: 1512, height: 920)
+        #expect(WindowLayout.isSameFrame(frame, frame.offsetBy(dx: 1, dy: -1)))
+        #expect(!WindowLayout.isSameFrame(frame, frame.offsetBy(dx: 30, dy: 0)))
+        #expect(!WindowLayout.isSameFrame(frame, CGRect(x: 0, y: 25, width: 1200, height: 920)))
+    }
+}
