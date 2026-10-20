@@ -17,7 +17,7 @@ public final class AwakeModule: TUModule {
     )
 
     static let pollInterval: Duration = .seconds(5)
-    static let manualDurations: [TimeInterval] = [3600, 3 * 3600, 8 * 3600, 0] // 0 = unlimited
+    static let manualDurations: [TimeInterval] = [3600, 3 * 3600, 0] // 0 = unlimited
 
     @ObservationIgnored private let settings: ModuleSettings
     @ObservationIgnored private let assertion = SleepAssertion()
@@ -63,7 +63,9 @@ public final class AwakeModule: TUModule {
         settings = context.settings
         mode = AwakeMode(rawValue: context.settings.value("mode", default: "off")) ?? .off
         manualUntil = context.settings.value("manualUntil", default: nil as Date?)
-        manualDuration = context.settings.value("manualDuration", default: 3 * 3600)
+        let savedDuration: TimeInterval = context.settings.value("manualDuration", default: 3 * 3600)
+        // Older versions also offered 8 hours.
+        manualDuration = Self.manualDurations.contains(savedDuration) ? savedDuration : 3 * 3600
         grace = context.settings.value("grace", default: 60)
         let savedSources: [String] = context.settings.value("sources", default: AgentDetector.Source.allCases.map(\.rawValue))
         sources = Set(savedSources.compactMap(AgentDetector.Source.init(rawValue:)))
@@ -240,13 +242,12 @@ private struct AwakeSectionView: View {
                     .lineLimit(1)
                 Spacer()
                 if module.mode == .manual {
-                    Menu("시간") {
-                        ForEach(AwakeModule.manualDurations, id: \.self) { duration in
-                            Button(AwakeModule.durationLabel(duration)) { module.startManual(duration: duration) }
-                        }
+                    Picker("시간", selection: Binding(get: { module.manualDuration }, set: { module.startManual(duration: $0) })) {
+                        ForEach(AwakeModule.manualDurations, id: \.self) { Text(AwakeModule.durationLabel($0)).tag($0) }
                     }
-                    .menuStyle(.borderlessButton)
-                    .font(.caption)
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .controlSize(.small)
                     .fixedSize()
                 }
             }
