@@ -109,3 +109,13 @@ struct EdgeResizeSnapTests {
         #expect(WindowLayout.verticalFill(window, visibleFrame: visible) == CGRect(x: 200, y: 60, width: 800, height: 897))
     }
 }
+
+struct RestoreOnDragTests {
+    @Test func keepsTopAndCursorRatio() {
+        // Filled window 800 wide, cursor a quarter across; original 400×300.
+        let filled = CGRect(x: 200, y: 60, width: 800, height: 897)
+        let restored = WindowLayout.restoredOnDrag(filled, originalSize: CGSize(width: 400, height: 300), cursorX: 400)
+        #expect(restored == CGRect(x: 300, y: 657, width: 400, height: 300))
+        #expect(restored.maxY == filled.maxY)
+    }
+}

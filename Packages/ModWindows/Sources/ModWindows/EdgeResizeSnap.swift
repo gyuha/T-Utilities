@@ -11,7 +11,16 @@ final class EdgeResizeSnap {
         let startFrame: CGRect
     }
 
+    /// A window we filled, so moving it restores its previous size like macOS' tiling does.
+    private struct Filled {
+        let window: AXUIElement
+        let originalSize: CGSize
+        let filledFrame: CGRect
+    }
+
     private var monitor: Any?
+    private var filled: [Filled] = []
+    private var restoreCandidate: (entry: Filled, window: AXWindow)?
     private var downLocation: CGPoint?
     private var tracking: Tracking?
     private var pendingTarget: CGRect?
@@ -42,14 +51,23 @@ final class EdgeResizeSnap {
                 // Hit-test once per drag, only when it actually becomes a drag.
                 downLocation = nil
                 tracking = Self.trackingCandidate(at: down)
+                if tracking == nil { restoreCandidate = filledWindow(at: down) }
             }
-            if let tracking { update(tracking, cursor: location) }
+            if let tracking {
+                update(tracking, cursor: location)
+            } else if let restoreCandidate {
+                restoreIfMoved(restoreCandidate, cursor: location)
+            }
         case .leftMouseUp:
             if let tracking, let target = pendingTarget {
                 // Let the app finish its own live resize first.
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
                     guard let primaryMaxY = NSScreen.screens.first?.frame.maxY else { return }
                     tracking.window.setFrame(WindowLayout.flipped(target, primaryScreenMaxY: primaryMaxY))
+                    guard let self, let placed = Self.cocoaFrame(of: tracking.window) else { return }
+                    filled.removeAll { CFEqual($0.window, tracking.window.element) }
+                    filled.append(Filled(window: tracking.window.element, originalSize: tracking.startFrame.size, filledFrame: placed))
+                    filled = Array(filled.suffix(20))
                 }
             }
             reset()
@@ -74,9 +92,40 @@ final class EdgeResizeSnap {
         preview.show(from: current, to: target)
     }
 
+    /// A filled window being dragged by its title bar: once it actually moves, give back its previous size,
+    /// keeping the cursor at the same relative spot across the title bar.
+    private func restoreIfMoved(_ candidate: (entry: Filled, window: AXWindow), cursor: CGPoint) {
+        guard let current = Self.cocoaFrame(of: candidate.window) else { return }
+        guard current.size == candidate.entry.filledFrame.size || WindowLayout.isSameFrame(
+            CGRect(origin: current.origin, size: candidate.entry.filledFrame.size), current
+        ) else {
+            // Resized by other means since: forget it.
+            restoreCandidate = nil
+            filled.removeAll { CFEqual($0.window, candidate.entry.window) }
+            return
+        }
+        guard !WindowLayout.isSameFrame(current, candidate.entry.filledFrame),
+              let primaryMaxY = NSScreen.screens.first?.frame.maxY else { return }
+        restoreCandidate = nil
+        filled.removeAll { CFEqual($0.window, candidate.entry.window) }
+        let restored = WindowLayout.restoredOnDrag(current, originalSize: candidate.entry.originalSize, cursorX: cursor.x)
+        // AX origin is top-left, so setting the size keeps the title bar under the cursor; then fix x.
+        candidate.window.set(size: restored.size)
+        candidate.window.set(position: WindowLayout.flipped(restored, primaryScreenMaxY: primaryMaxY).origin)
+    }
+
+    private func filledWindow(at point: CGPoint) -> (entry: Filled, window: AXWindow)? {
+        guard !filled.isEmpty, let primaryMaxY = NSScreen.screens.first?.frame.maxY,
+              let window = AXWindow.at(CGPoint(x: point.x, y: primaryMaxY - point.y)),
+              let entry = filled.first(where: { CFEqual($0.window, window.element) }),
+              let frame = Self.cocoaFrame(of: window), WindowLayout.isSameFrame(frame, entry.filledFrame) else { return nil }
+        return (entry, window)
+    }
+
     private func reset() {
         downLocation = nil
         tracking = nil
+        restoreCandidate = nil
         pendingTarget = nil
         preview.hide()
     }

@@ -35,6 +35,16 @@ enum WindowLayout {
         }
     }
 
+    /// Previous size for a filled window that started moving: top edge stays (title bar under the cursor) and
+    /// the cursor keeps its relative horizontal position, as macOS does when dragging a tiled window away.
+    static func restoredOnDrag(_ window: CGRect, originalSize: CGSize, cursorX: CGFloat) -> CGRect {
+        let ratio = window.width > 0 ? min(1, max(0, (cursorX - window.minX) / window.width)) : 0.5
+        return CGRect(
+            x: cursorX - ratio * originalSize.width, y: window.maxY - originalSize.height,
+            width: originalSize.width, height: originalSize.height
+        )
+    }
+
     /// Same x and width, full visible height.
     static func verticalFill(_ window: CGRect, visibleFrame: CGRect) -> CGRect {
         CGRect(x: window.minX, y: visibleFrame.minY, width: window.width, height: visibleFrame.height)
