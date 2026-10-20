@@ -7,22 +7,7 @@ struct ModulePane: View {
 
     var body: some View {
         if let descriptor = registry.descriptor(for: moduleID) {
-            VStack(spacing: 0) {
-                Form {
-                    Section {
-                        ModuleToggleRow(registry: registry, descriptor: descriptor, showsHandle: false)
-                        if let error = registry.startErrors[moduleID] {
-                            Label("시작 실패: \(error)", systemImage: "xmark.octagon.fill").foregroundStyle(.red)
-                        }
-                        if let status = registry.active[moduleID]?.status, let message = message(for: status) {
-                            Label(message, systemImage: "exclamationmark.triangle.fill").foregroundStyle(.orange)
-                        }
-                    }
-                }
-                .formStyle(.grouped)
-                .scrollDisabled(true)
-                .fixedSize(horizontal: false, vertical: true)
-
+            Group {
                 if let module = registry.active[moduleID] {
                     module.makeSettingsView()
                 } else {
@@ -31,8 +16,25 @@ struct ModulePane: View {
                         systemImage: descriptor.symbol,
                         description: Text("모듈을 켜면 설정이 표시됩니다.")
                     )
+                    .frame(maxHeight: .infinity)
                 }
-                Spacer(minLength: 0)
+            }
+            // A pinned header instead of a second fixed-size Form: extra status rows must not raise the
+            // pane's minimum height, or the content overflows above the window when it doesn't fit.
+            .safeAreaInset(edge: .top, spacing: 0) {
+                VStack(alignment: .leading, spacing: 8) {
+                    ModuleToggleRow(registry: registry, descriptor: descriptor, showsHandle: false)
+                    if let error = registry.startErrors[moduleID] {
+                        Label("시작 실패: \(error)", systemImage: "xmark.octagon.fill").foregroundStyle(.red)
+                    }
+                    if let status = registry.active[moduleID]?.status, let message = message(for: status) {
+                        Label(message, systemImage: "exclamationmark.triangle.fill").foregroundStyle(.orange)
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 10)
+                .background(.bar)
+                .overlay(alignment: .bottom) { Divider() }
             }
             .navigationTitle(descriptor.displayName)
         }
