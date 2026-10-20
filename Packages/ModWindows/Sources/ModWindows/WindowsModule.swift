@@ -33,11 +33,29 @@ public final class WindowsModule: TUModule {
     @ObservationIgnored private var restoreEntries: [RestoreEntry] = []
     private static let maxRestoreEntries = 20
 
-    public init(context: ModuleContext) {}
+    @ObservationIgnored private let settings: ModuleSettings
+    @ObservationIgnored private let edgeSnap = EdgeResizeSnap()
 
-    public func start() async throws {}
+    /// Drag a window's top/bottom edge to the screen edge → full height (Windows-style).
+    var edgeVerticalFill: Bool {
+        didSet {
+            settings.set(edgeVerticalFill, for: "edgeVerticalFill")
+            edgeVerticalFill ? edgeSnap.start() : edgeSnap.stop()
+        }
+    }
 
-    public func stop() async {}
+    public init(context: ModuleContext) {
+        settings = context.settings
+        edgeVerticalFill = context.settings.value("edgeVerticalFill", default: true)
+    }
+
+    public func start() async throws {
+        if edgeVerticalFill { edgeSnap.start() }
+    }
+
+    public func stop() async {
+        edgeSnap.stop()
+    }
 
     public var status: ModuleStatus {
         Permission.accessibility.isGranted ? .running : .needsPermission(.accessibility)
@@ -52,7 +70,7 @@ public final class WindowsModule: TUModule {
     }
 
     public func makeSettingsView() -> AnyView {
-        AnyView(WindowsSettingsView())
+        AnyView(WindowsSettingsView(module: self))
     }
 
     // MARK: - Actions
@@ -126,6 +144,7 @@ enum SystemTopEdgeFill {
 }
 
 private struct WindowsSettingsView: View {
+    @Bindable var module: WindowsModule
     @State private var granted = Permission.accessibility.isGranted
     @State private var topEdgeFill = SystemTopEdgeFill.isEnabled
 
@@ -139,6 +158,14 @@ private struct WindowsSettingsView: View {
                 Text("기본 단축키")
             } footer: {
                 Text("단축키는 설정 → 일반에서 바꿀 수 있습니다. Rectangle이 실행 중이면 같은 단축키가 충돌하니 종료하세요.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            Section {
+                Toggle("창 위·아래 가장자리를 화면 끝까지 끌면 세로로 채우기", isOn: $module.edgeVerticalFill)
+            } header: {
+                Text("드래그")
+            } footer: {
+                Text("창의 위나 아래 가장자리를 잡고 메뉴 막대나 Dock 쪽 끝까지 끌면 미리보기가 나타나고, 놓으면 가로 크기는 그대로 높이만 화면에 맞춥니다.")
                     .font(.caption).foregroundStyle(.secondary)
             }
             Section {

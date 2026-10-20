@@ -85,3 +85,27 @@ struct RestoreFrameTests {
         #expect(!WindowLayout.isSameFrame(frame, CGRect(x: 0, y: 25, width: 1200, height: 920)))
     }
 }
+
+struct EdgeResizeSnapTests {
+    // Cocoa coordinates: 1512×982 display, menu bar 25pt, Dock 60pt at the bottom.
+    let visible = CGRect(x: 0, y: 60, width: 1512, height: 897)
+    let window = CGRect(x: 200, y: 300, width: 800, height: 400)
+
+    @Test func grabsOnlyTopOrBottomBorder() {
+        #expect(WindowLayout.resizeEdge(at: CGPoint(x: 500, y: 702), window: window) == .top)
+        #expect(WindowLayout.resizeEdge(at: CGPoint(x: 500, y: 297), window: window) == .bottom)
+        #expect(WindowLayout.resizeEdge(at: CGPoint(x: 500, y: 650), window: window) == nil)   // title bar / content
+        #expect(WindowLayout.resizeEdge(at: CGPoint(x: 1100, y: 700), window: window) == nil)  // beside the window
+    }
+
+    @Test func triggersAtMenuBarOrDock() {
+        #expect(WindowLayout.isAtScreenEdge(CGPoint(x: 500, y: 970), edge: .top, visibleFrame: visible))
+        #expect(!WindowLayout.isAtScreenEdge(CGPoint(x: 500, y: 900), edge: .top, visibleFrame: visible))
+        #expect(WindowLayout.isAtScreenEdge(CGPoint(x: 500, y: 40), edge: .bottom, visibleFrame: visible))
+        #expect(!WindowLayout.isAtScreenEdge(CGPoint(x: 500, y: 40), edge: .top, visibleFrame: visible))
+    }
+
+    @Test func keepsWidthAndFillsHeight() {
+        #expect(WindowLayout.verticalFill(window, visibleFrame: visible) == CGRect(x: 200, y: 60, width: 800, height: 897))
+    }
+}

@@ -15,6 +15,31 @@ enum WindowLayout {
             && abs(a.width - b.width) <= tolerance && abs(a.height - b.height) <= tolerance
     }
 
+    // MARK: Edge-resize snap (top/bottom edge dragged to the screen edge → full visible height)
+
+    enum ResizeEdge: Sendable { case top, bottom }
+
+    /// Which horizontal edge a drag starting at `point` grabs, if any. macOS' resize area straddles the border.
+    static func resizeEdge(at point: CGPoint, window: CGRect, band: CGFloat = 6) -> ResizeEdge? {
+        guard point.x >= window.minX - band, point.x <= window.maxX + band else { return nil }
+        if abs(point.y - window.maxY) <= band { return .top }
+        if abs(point.y - window.minY) <= band { return .bottom }
+        return nil
+    }
+
+    /// Cursor has reached the menu bar / Dock side of the screen for the edge being dragged.
+    static func isAtScreenEdge(_ point: CGPoint, edge: ResizeEdge, visibleFrame: CGRect, threshold: CGFloat = 2) -> Bool {
+        switch edge {
+        case .top: point.y >= visibleFrame.maxY - threshold
+        case .bottom: point.y <= visibleFrame.minY + threshold
+        }
+    }
+
+    /// Same x and width, full visible height.
+    static func verticalFill(_ window: CGRect, visibleFrame: CGRect) -> CGRect {
+        CGRect(x: window.minX, y: visibleFrame.minY, width: window.width, height: visibleFrame.height)
+    }
+
     enum Action: Sendable {
         case maximize, nextDisplay, previousDisplay
     }

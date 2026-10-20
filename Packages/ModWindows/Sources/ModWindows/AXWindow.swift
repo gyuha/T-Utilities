@@ -23,6 +23,21 @@ struct AXWindow {
         return nil
     }
 
+    /// The window under a point in Accessibility coordinates (top-left origin), e.g. where a drag started.
+    static func at(_ point: CGPoint) -> AXWindow? {
+        let systemWide = AXUIElementCreateSystemWide()
+        AXUIElementSetMessagingTimeout(systemWide, 0.2)
+        var hit: AXUIElement?
+        guard AXUIElementCopyElementAtPosition(systemWide, Float(point.x), Float(point.y), &hit) == .success,
+              let hit else { return nil }
+        let window: AXUIElement? = (hit.value(kAXRoleAttribute) as String?) == (kAXWindowRole as String)
+            ? hit : hit.value(kAXWindowAttribute)
+        var pid: pid_t = 0
+        guard let window, AXUIElementGetPid(window, &pid) == .success,
+              pid != ProcessInfo.processInfo.processIdentifier else { return nil }
+        return AXWindow(element: window, app: AXUIElementCreateApplication(pid))
+    }
+
     var frame: CGRect? {
         guard let position: CGPoint = element.axValue(kAXPositionAttribute, type: .cgPoint),
               let size: CGSize = element.axValue(kAXSizeAttribute, type: .cgSize) else { return nil }
