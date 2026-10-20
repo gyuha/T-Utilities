@@ -22,10 +22,11 @@ sed -i '' -e "s/CFBundleShortVersionString: \".*\"/CFBundleShortVersionString: \
           -e "s/CFBundleVersion: \".*\"/CFBundleVersion: \"$BUILD\"/" project.yml
 
 xcodegen generate
+# Separate DerivedData: `clean` must not delete the Debug app that may be running from build/DerivedData.
 xcodebuild -project T-Utilities.xcodeproj -scheme T-Utilities -configuration Release \
-  -derivedDataPath build/DerivedData clean build | grep -E "error:|BUILD" || true
+  -derivedDataPath build/ReleaseDerivedData clean build | grep -E "error:|BUILD" || true
 
-APP=build/DerivedData/Build/Products/Release/T-Utilities.app
+APP=build/ReleaseDerivedData/Build/Products/Release/T-Utilities.app
 codesign --verify --deep --strict "$APP"
 codesign -dr - "$APP" 2>&1 | grep -q 'certificate leaf' || { echo "app is not signed with the T-Utilities Dev certificate"; exit 1; }
 [[ $(defaults read "$PWD/$APP/Contents/Info" CFBundleShortVersionString) == $VERSION ]]
