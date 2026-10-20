@@ -109,7 +109,7 @@ sudo powermetrics --samplers tasks -i 5000 -n 6 | grep -i t-utilities   # wakeup
 | `LidSleepGuard` heartbeat | 10 s | 메인 | 뚜껑 닫힘 방지 중에만 `AwakeGuard`에 1바이트 |
 | `AwakeGuard` (별도 프로세스) | poll 30 s | — | 무응답·EOF 시 복원 후 종료 |
 | `ClockModule` | 분 경계 1회 | 메인 | 메뉴바 텍스트 |
-| `CableModule` | 15 s + 팝오버 열 때 | 메인 액터 (스냅샷 실행 스레드 확인 필요) | WhatCable 전체 스냅샷 + `PortReport` 빌드. `CableSnapshotContext`를 요약용으로 한 번 더 생성 |
+| `CableModule` | 15 s + 팝오버 열 때 | 메인 액터 (WhatCable `snapshot()`이 `@MainActor`, 1회 약 50 ms) | WhatCable 전체 스냅샷 + `PortReport` 빌드. `CableSnapshotContext`를 요약용으로 한 번 더 생성 |
 | `MouseModule` 이벤트 탭 | 이벤트 | 메인 런루프 | otherMouse·scrollWheel 전부 통과 (콜백은 분기만) |
 | `MouseModule` 탭 감시 | 3 s | 백그라운드 | 임시 탭 생성·해제로 권한 확인 |
 | `MouseModule` 배터리 | 300 s + 장치 알림 | 메인 | HID++ 요청 |
@@ -122,7 +122,12 @@ sudo powermetrics --samplers tasks -i 5000 -n 6 | grep -i t-utilities   # wakeup
 우선순위는 기대 효과 순. 각 항목은 "측정으로 확인 → 적용 → 재측정".
 
 1. **peak 275 MB 원인 찾기** — 시작 직후인지(Clipboard 기록·이미지 로드, Cable 첫 스냅샷, SwiftUI 초기화) 특정 동작인지. `measure.sh`의 단독 구성 peak 값으로 모듈을 좁힌 뒤 Allocations로 확인.
+   - **결과 (2026-10-20): 팝오버·창 전환 때 시스템 그래픽 버퍼 — 앱이 줄일 수 없음.** 시작 직후 peak는 모든 구성에서 17 MB 이하. 실사용 중 팝오버 열기·닫기, 설정창 열기·닫기마다 0.5~1.5 s 동안 280~297 MB로 튀고, `footprint --sample 0.1`로 보면 증가분은 거의 전부 `Owned physical footprint (unmapped) (graphics)`(1.9 → 218 MB): WindowServer/CoreAnimation이 창 합성용으로 잡아 앱 몫으로 계산하는 GPU 메모리. Finder 창을 열어도 Finder의 같은 항목이 4 → 196 MB로 같은 모양(화면 3개: 내장 XDR + 4K 2대). 팝오버는 이미 `animates = false`. 셸에서 앱 활성화·텍스트 복사만 해서는 재현 안 됨. → **`peak`는 UI를 띄운 구간에서는 앱 비교 지표로 부적합**(유휴 측정값만 비교).
+   - OCR(Vision `VNRecognizeTextRequest`)은 별도 원인: 앱과 같은 설정을 별도 프로세스로 돌리면 peak 233~291 MB(`.fast`·언어 보정 끔·영어만이어도 263~283 MB, 1200×200 이미지도 162 MB → Vision 고정 비용). 끝나면 반환되고 약 15 MB 남음. 앱 안에서는 OCR 시 464~466 MB까지 기록(위 그래픽 급증과 겹친 것으로 보임). 4K 이미지 복사(캡처 경로)는 +33 MB(비트맵 1장).
+   - 실사용 후 상주 메모리는 17 → 80 MB(그중 Malloc Small 38 MB) — §6-4에서 따로 볼 것.
+   - VisionKit `ImageAnalyzer`는 인식을 `mediaanalysisd`에서 하므로 호출 프로세스 peak 61 MB(데몬 +45 MB), 1.2~1.9 s. 하지만 같은 이미지에서 문자 오류율 약 3~7%(Vision `.accurate` 0.43%). Preview 라이브 텍스트도 VisionKitCore → Vision·TextRecognition·MediaAnalysisServices를 링크하나, 실제 경로는 사용자 동작(호버)이 필요해 셸에서 확인 못 함.
 2. **Cable 15 s 스냅샷** — 팝오버가 닫혀 있을 때도 IOKit 전체 순회. 후보: 팝오버/메뉴가 열릴 때만 갱신, 요약용 `CableSnapshotContext` 중복 생성 제거, 스냅샷이 메인 스레드에서 도는지 확인 후 백그라운드로. WhatCable의 static watcher 상태가 모듈을 꺼도 남는 문제(알려진 한계)도 메모리에 영향.
+   - **결과 (2026-10-20):** `sample` 60 s 기준 메인 스레드 사용 218 ms 중 97%가 `snapshot()`(그중 `DisplayTimingReader.readNodes` 약 55%). 요약용 `CableSnapshotContext` 중복은 1% 미만이라 그대로 둠. 백그라운드 이전은 vendored WhatCable 수정이 필요해 제외. **주기 갱신 제거 → 시작 1회 + 팝오버 열 때 + 설정 페이지 표시 시** 적용: cable CPU 0.325 → 0.000 %, all 0.425 → 0.108 % (§7.1).
 3. **Clipboard 0.5 s 폴링** — 타이머 leeway 지정, 폴링 간격 조정. 복사 감지 지연(체감)과의 트레이드오프.
 4. **설정창·팝오버 유지 비용** — 설정창은 닫아도 SwiftUI 뷰 트리가 남음. 닫을 때 해제하면 메모리 절약, 다시 열 때 비용 증가.
 5. **Clipboard 이미지 캐시** — 썸네일 300개·원본 20개 상한이 실제 메모리에 얼마인지. 바이트 기준 `totalCostLimit` 검토.
@@ -146,6 +151,23 @@ sudo powermetrics --samplers tasks -i 5000 -n 6 | grep -i t-utilities   # wakeup
 | all | | | | |
 
 환경 기록: macOS 버전, 빌드 종류(설치본/Release), 커밋, `DURATION`/`WARMUP`, 연결된 장치(G304, USB-C 장치 수), 실행 중인 에이전트 수.
+
+### 7.1 Cable 주기 갱신 제거 (2026-10-20)
+
+전: `baseline-20261020.csv` (설치된 v0.1.2, release.sh Release 빌드). 후: `after-cable-on-demand.csv` (Release 빌드, v0.1.2 + Cable 변경). 각 3회 중앙값.
+
+| config | footprint 전 → 후 (MB) | peak 전 → 후 (MB) | CPU 전 → 후 (%) | 비고 |
+|---|---|---|---|---|
+| none | 13 → 12 | 13 → 13 | 0.000 → 0.008 | |
+| awake | 13 | 14 | 0.008 | 모드: 수동(기간 0) |
+| clipboard | 13 | 13 | 0.017 | 기록 수: 11 / 이미지 수: 1 |
+| cable | 16 → 15 | 16 → 15 | **0.325 → 0.000** | |
+| clock | 14 | 14 | 0.017 | |
+| windows | 13 | 13 | 0.000 | |
+| mouse | 13 | 14 | 0.017 | |
+| all | 17 → 16 | 17 → 16 | **0.425 → 0.108** | 후 3회: 0.058 / 0.108 / 0.167 |
+
+환경: macOS 27.0.1 (26A434), AC 전원, `DURATION=120` `WARMUP=20`, `caffeinate -i`로 OS 잠자기 방지(이 Mac은 잠자기 1분 설정), USB-C 2개(G304 receiver, 모니터), claude 2·codex 2 실행 중. 단독 모듈 행에 하나만 있는 값은 기준선만 잰 것.
 
 ## 8. 깨면 안 되는 동작 (회귀 체크리스트)
 

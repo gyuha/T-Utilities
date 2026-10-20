@@ -1,0 +1,4 @@
+config,modules,footprint_mb,footprint_peak_mb,rss_mb,cpu_avg_pct,cpu_seconds,duration_s,version
+none,,12.0,13.0,76.4,0.008,0.01,120,0.1.2
+cable,cable,15.0,15.0,83.1,0.000,0.00,120,0.1.2
+all,awake+clipboard+cable+clock+windows+mouse,16.0,16.0,86.8,0.108,0.13,120,0.1.2

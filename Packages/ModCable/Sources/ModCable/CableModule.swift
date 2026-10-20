@@ -19,9 +19,8 @@ public final class CableModule: TUModule {
         conflictingBundleIDs: ["uk.whatcable.whatcable"]
     )
 
-    /// Background refresh for the one-line summary; the popover also refreshes when it opens.
-    static let refreshInterval: Duration = .seconds(15)
-
+    /// Initial read so the first popover shows real data. After that the snapshot (~50 ms of IOKit work
+    /// on the main actor) is taken only when the popover opens or the settings page appears.
     @ObservationIgnored private var refresher: Task<Void, Never>?
     @ObservationIgnored private var isRefreshing = false
     private(set) var reports: [PortReport] = []
@@ -32,10 +31,7 @@ public final class CableModule: TUModule {
 
     public func start() async throws {
         refresher = Task { [weak self] in
-            while !Task.isCancelled {
-                await self?.refresh()
-                try? await Task.sleep(for: Self.refreshInterval)
-            }
+            await self?.refresh()
         }
     }
 
@@ -125,5 +121,6 @@ private struct CableSettingsView: View {
             }
         }
         .formStyle(.grouped)
+        .task { await module.refresh() }
     }
 }
