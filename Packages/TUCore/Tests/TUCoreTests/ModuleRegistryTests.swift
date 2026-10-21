@@ -82,7 +82,7 @@ struct ModuleRegistryTests {
     @Test func disablingReleasesTheInstance() async throws {
         let registry = makeRegistry()
         await registry.startEnabledModules()
-        weak let alpha = registry.active["alpha"]
+        weak var alpha = registry.active["alpha"]
         #expect(alpha != nil)
 
         await registry.setEnabled(false, for: "alpha")

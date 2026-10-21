@@ -121,7 +121,7 @@ struct ClipboardModuleTests {
 
         await module?.stop()
         #expect(module?.makePopoverSection() == nil)
-        weak let released = module
+        weak var released = module
         module = nil
         #expect(released == nil)
     }
