@@ -13,6 +13,7 @@ Each module can be turned on/off and reordered in Settings; disabled modules are
 | Windows | Maximize, next/previous display, hold ⌥ and drag anywhere to move (right-drag to resize) | [Rectangle](https://github.com/rxhanson/Rectangle), [easy-move-resize](https://github.com/dmarcotte/easy-move-resize) |
 | Cable | USB-C port, cable and charger diagnostics | [WhatCable](https://github.com/darrylmorley/whatcable) |
 | Mouse | Pointer speed/acceleration, side buttons → Mission Control / Show Desktop, wheel reverse/linear, Logitech battery (HID++) | [LinearMouse](https://github.com/linearmouse/linearmouse) |
+| Dictionary | Global hotkey (⌥⌘Space) opens a small Naver / Daum dictionary panel (⌘1 / ⌘2 to switch); off by default | idea from [allkdic](https://github.com/devxoul/allkdic) |
 
 Install: `brew install --cask mordol/tap/t-utilities`, or see [INSTALL.md](INSTALL.md). Plan and design notes: [PLAN.md](PLAN.md).
 
