@@ -2,6 +2,7 @@ import AppKit
 import ClamshellKit
 import SwiftUI
 import TUCore
+import TUUI
 
 /// Sleep prevention: off / manual (timed) / auto (while coding agents work),
 /// optionally also with the lid closed (no external display needed).
@@ -150,12 +151,12 @@ public final class AwakeModule: TUModule {
 
     // MARK: - Shell integration
 
-    /// Same cup in every state: outline = off, filled = holding; steam = auto mode.
+    /// 2×2 grid: off = all outlined, manual = top-left filled, auto = top row filled.
     public var statusItemImage: NSImage? {
         switch mode {
-        case .off: AwakeIcon.image(filled: false, steam: false)
-        case .manual: AwakeIcon.image(filled: true, steam: false)
-        case .auto: AwakeIcon.image(filled: isHolding, steam: true)
+        case .off: GridIcon.image()
+        case .manual: GridIcon.image(filled: [true, false, false, false])
+        case .auto: GridIcon.image(filled: [true, true, false, false])
         }
     }
 
@@ -222,7 +223,7 @@ private struct AwakeSectionView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 8) {
-                Image(nsImage: module.statusItemImage ?? AwakeIcon.image(filled: false, steam: false))
+                Image(nsImage: module.statusItemImage ?? GridIcon.image())
                     .renderingMode(.template)
                     .frame(width: 18)
                     .foregroundStyle(module.isHolding ? Color.accentColor : .secondary)

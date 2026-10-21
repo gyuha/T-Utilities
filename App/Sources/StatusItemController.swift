@@ -1,13 +1,12 @@
 import AppKit
 import SwiftUI
 import TUCore
+import TUUI
 
 /// The single menu bar item: main icon (overridable by a module, e.g. Awake) + accessory text (e.g. Clock).
 /// Left click toggles the popover, right click shows the quick menu.
 @MainActor
 final class StatusItemController: NSObject {
-    private static let defaultSymbol = "square.grid.2x2"
-
     private let registry: ModuleRegistry
     private let openSettings: () -> Void
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -52,8 +51,8 @@ final class StatusItemController: NSObject {
     private func updateAppearance() {
         guard let button = statusItem.button else { return }
         let modules = registry.activeModules
-        let defaultImage = NSImage(systemSymbolName: Self.defaultSymbol, accessibilityDescription: "T-Utilities")
-        defaultImage?.isTemplate = true
+        let defaultImage = GridIcon.image()
+        defaultImage.accessibilityDescription = "T-Utilities"
         button.image = modules.lazy.compactMap(\.statusItemImage).first ?? defaultImage
 
         let text = modules.compactMap(\.statusItemText).joined(separator: "  ")
