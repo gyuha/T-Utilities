@@ -3,6 +3,7 @@ import KeyboardShortcuts
 import ServiceManagement
 import SwiftUI
 import TUCore
+import TUUI
 
 struct GeneralPane: View {
     let registry: ModuleRegistry
@@ -31,11 +32,7 @@ struct GeneralPane: View {
                     Text("활성 모듈에 단축키가 없습니다").foregroundStyle(.secondary)
                 }
                 ForEach(hotkeys, id: \.hotkey.name.rawValue) { item in
-                    LabeledContent {
-                        KeyboardShortcuts.Recorder(for: item.hotkey.name)
-                    } label: {
-                        Label("\(item.module.displayName) · \(item.hotkey.title)", systemImage: item.module.symbol)
-                    }
+                    HotkeyRow(module: item.module, hotkey: item.hotkey)
                 }
             }
 
@@ -112,6 +109,27 @@ struct GeneralPane: View {
             launchAtLoginError = error.localizedDescription
             launchAtLogin = SMAppService.mainApp.status == .enabled
         }
+    }
+}
+
+/// Shortcut recorder with a conflict badge when the current combination is known to clash.
+private struct HotkeyRow: View {
+    let module: ModuleDescriptor
+    let hotkey: HotkeyDefinition
+    @State private var shortcut: KeyboardShortcuts.Shortcut?
+
+    var body: some View {
+        LabeledContent {
+            HStack(spacing: 6) {
+                if let shortcut, let warning = hotkey.conflicts[shortcut] {
+                    ConflictBadge(warning)
+                }
+                KeyboardShortcuts.Recorder(for: hotkey.name) { shortcut = $0 }
+            }
+        } label: {
+            Label("\(module.displayName) · \(hotkey.title)", systemImage: module.symbol)
+        }
+        .onAppear { shortcut = KeyboardShortcuts.getShortcut(for: hotkey.name) }
     }
 }
 

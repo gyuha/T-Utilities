@@ -46,11 +46,19 @@ public enum ModuleStatus: Equatable, Sendable {
 public struct HotkeyDefinition {
     public let name: KeyboardShortcuts.Name
     public let title: String
+    /// Shortcuts known to clash with apps or macOS, with a short explanation shown next to the recorder.
+    public let conflicts: [KeyboardShortcuts.Shortcut: String]
     public let action: @MainActor () -> Void
 
-    public init(name: KeyboardShortcuts.Name, title: String, action: @escaping @MainActor () -> Void) {
+    public init(
+        name: KeyboardShortcuts.Name,
+        title: String,
+        conflicts: [KeyboardShortcuts.Shortcut: String] = [:],
+        action: @escaping @MainActor () -> Void
+    ) {
         self.name = name
         self.title = title
+        self.conflicts = conflicts
         self.action = action
     }
 }

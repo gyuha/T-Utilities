@@ -36,6 +36,8 @@ enum PlainTextPaste {
     /// `willWrite` runs before each pasteboard write so the history monitor can ignore it.
     static func perform(willWrite: @escaping @MainActor () -> Void) {
         let pasteboard = NSPasteboard.general
+        // Check first: arming the monitor's "ignore next change" without writing would drop the user's next copy.
+        guard pasteboard.string(forType: .string) != nil else { return }
         willWrite()
         guard let snapshot = replaceWithPlainText(on: pasteboard) else { return }
         Paster.postCommandV()

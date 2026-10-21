@@ -81,7 +81,14 @@ public final class ClipboardModule: TUModule {
     public var hotkeys: [HotkeyDefinition] {
         [
             HotkeyDefinition(name: .clipboardToggle, title: "클립보드 열기/닫기") { [popover] in popover.toggle() },
-            HotkeyDefinition(name: .clipboardPlainTextPaste, title: "서식 없이 붙여넣기") { [weak self] in
+            HotkeyDefinition(
+                name: .clipboardPlainTextPaste,
+                title: "서식 없이 붙여넣기",
+                conflicts: [
+                    .init(.v, modifiers: [.command, .shift, .option]):
+                        "여러 앱의 '붙여넣고 스타일 일치'(⌥⇧⌘V)와 같은 키입니다. 앱 기능 대신 이 기능이 동작하며, 클립보드를 잠시 바꿨다 되돌리는 방식이라 느린 앱에서는 서식이 남을 수 있습니다.",
+                ]
+            ) { [weak self] in
                 guard Permission.accessibility.isGranted else {
                     Permission.accessibility.request()
                     return
