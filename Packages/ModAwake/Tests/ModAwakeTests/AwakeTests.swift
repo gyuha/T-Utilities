@@ -118,3 +118,30 @@ struct PowerGuardTests {
         #expect(PowerGuard.tripReason(snapshot(battery: false, percent: nil, thermal: .critical), batteryThreshold: 20, thermalGuard: false) == nil)
     }
 }
+
+struct ClamshellMarkerTests {
+    private func makeMarker() -> ClamshellMarker {
+        let suite = "ClamshellMarkerTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defaults.removePersistentDomain(forName: suite)
+        return ClamshellMarker(defaults: defaults)
+    }
+
+    @Test func skipsRestoreWithoutMarker() {
+        let marker = makeMarker()
+        var restored = false
+        #expect(!marker.recoverIfNeeded { restored = true; return true })
+        #expect(!restored)
+    }
+
+    @Test func restoresOnceAndClearsMarker() {
+        let marker = makeMarker()
+        marker.set()
+        var restoreCount = 0
+        #expect(marker.recoverIfNeeded { restoreCount += 1; return true })
+        #expect(restoreCount == 1)
+        #expect(!marker.isSet)
+        #expect(!marker.recoverIfNeeded { restoreCount += 1; return true })
+        #expect(restoreCount == 1)
+    }
+}
