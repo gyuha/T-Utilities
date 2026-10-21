@@ -9,10 +9,11 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../TUCore"),
+        .package(path: "../TUUI"),
         .package(url: "https://github.com/sindresorhus/KeyboardShortcuts", from: "3.1.0"),
     ],
     targets: [
-        .target(name: "ModWindows", dependencies: ["TUCore", "KeyboardShortcuts"]),
+        .target(name: "ModWindows", dependencies: ["TUCore", "TUUI", "KeyboardShortcuts"]),
         .testTarget(name: "ModWindowsTests", dependencies: ["ModWindows"]),
     ]
 )

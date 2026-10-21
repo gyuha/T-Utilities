@@ -63,3 +63,13 @@ struct ModifierDragTests {
         #expect(result.maxX == frame.maxX && result.maxY == frame.maxY)
     }
 }
+
+struct DragModifierConflictTests {
+    @Test func singleModifiersWarnCombinationsDont() {
+        #expect(DragModifiers.option.conflictWarning != nil)
+        #expect(DragModifiers.command.conflictWarning != nil)
+        #expect(DragModifiers.shift.conflictWarning != nil)
+        #expect(DragModifiers.control.conflictWarning != nil)
+        #expect(DragModifiers([.control, .command]).conflictWarning == nil)
+    }
+}

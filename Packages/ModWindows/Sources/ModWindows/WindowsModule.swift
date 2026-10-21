@@ -2,6 +2,7 @@ import AppKit
 import KeyboardShortcuts
 import SwiftUI
 import TUCore
+import TUUI
 
 // Window actions adapted from Rectangle (MIT, © Ryan Hanson; based on Spectacle © Eric Czarny)
 // https://github.com/rxhanson/Rectangle — only Maximize and Next/Previous Display, with Rectangle's default shortcuts.
@@ -207,6 +208,9 @@ private struct WindowsSettingsView: View {
                 if module.modifierDrag {
                     LabeledContent("수정키") {
                         HStack(spacing: 12) {
+                            if let warning = module.modifierDragKeys.conflictWarning {
+                                ConflictBadge(warning)
+                            }
                             ForEach(ModifierKeyOption.all) { option in
                                 Toggle(option.label, isOn: Binding(
                                     get: { module.modifierDragKeys.contains(option.key) },

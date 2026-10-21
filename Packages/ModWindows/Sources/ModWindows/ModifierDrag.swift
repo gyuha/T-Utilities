@@ -17,6 +17,17 @@ struct DragModifiers: OptionSet, Sendable {
         return modifiers.isEmpty ? .default : modifiers
     }
 
+    /// A single modifier is already a click modifier all over macOS, so arming it on its own hijacks that click.
+    var conflictWarning: String? {
+        switch self {
+        case .option: "⌥ 클릭·드래그와 충돌합니다: Finder의 ⌥ 드래그 복사, 편집기의 열 선택 등이 창 이동으로 바뀝니다."
+        case .command: "⌘ 클릭과 충돌합니다: 여러 항목 선택, 링크를 새 탭에서 열기, 뒤쪽 창 클릭 등이 창 이동으로 바뀝니다."
+        case .shift: "⇧ 클릭과 충돌합니다: 텍스트·목록의 범위 선택이 창 이동으로 바뀝니다."
+        case .control: "⌃ 클릭은 macOS의 오른쪽 클릭(문맥 메뉴)입니다. 문맥 메뉴 대신 창이 이동합니다."
+        default: nil
+        }
+    }
+
     /// Exactly these keys are down (Caps Lock, fn etc. are ignored), so ⌥ does not also fire on ⌥⌘.
     func matches(_ flags: CGEventFlags) -> Bool {
         var pressed: DragModifiers = []
