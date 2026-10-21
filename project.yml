@@ -28,6 +28,8 @@ packages:
     path: Packages/ModCable
   ModMouse:
     path: Packages/ModMouse
+  ModStats:
+    path: Packages/ModStats
 
 targets:
   T-Utilities:
@@ -48,6 +50,7 @@ targets:
       - package: ModWindows
       - package: ModCable
       - package: ModMouse
+      - package: ModStats
       - target: AwakeGuard
         embed: true
         codeSign: true

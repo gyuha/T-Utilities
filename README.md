@@ -13,6 +13,7 @@ Each module can be turned on/off and reordered in Settings; disabled modules are
 | Windows | Maximize, next/previous display, hold ⌥ and drag anywhere to move (right-drag to resize) | [Rectangle](https://github.com/rxhanson/Rectangle), [easy-move-resize](https://github.com/dmarcotte/easy-move-resize) |
 | Cable | USB-C port, cable and charger diagnostics | [WhatCable](https://github.com/darrylmorley/whatcable) |
 | Mouse | Pointer speed/acceleration, side buttons → Mission Control / Show Desktop, wheel reverse/linear, Logitech battery (HID++) | [LinearMouse](https://github.com/linearmouse/linearmouse) |
+| Stats | CPU and memory at a glance, top processes by CPU/memory. Measured only when the popover opens (no background polling), off by default | idea from [Stats](https://github.com/exelban/stats) |
 
 Install: `brew install --cask mordol/tap/t-utilities`, or see [INSTALL.md](INSTALL.md). Plan and design notes: [PLAN.md](PLAN.md).
 
