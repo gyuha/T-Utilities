@@ -11,10 +11,11 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../TUCore"),
+        .package(path: "../TUUI"),
     ],
     targets: [
         .target(name: "ClamshellKit"),
-        .target(name: "ModAwake", dependencies: ["TUCore", "ClamshellKit"]),
+        .target(name: "ModAwake", dependencies: ["TUCore", "TUUI", "ClamshellKit"]),
         .testTarget(name: "ModAwakeTests", dependencies: ["ModAwake"]),
     ]
 )

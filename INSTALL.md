@@ -21,7 +21,7 @@ Uninstall with `brew uninstall --cask t-utilities` (add `--zap` to also delete s
    ```sh
    xattr -dr com.apple.quarantine /Applications/T-Utilities.app
    ```
-4. Open T-Utilities. A cup icon appears in the menu bar; left-click opens the panel, right-click the quick menu.
+4. Open T-Utilities. A four-squares grid icon appears in the menu bar; left-click opens the panel, right-click the quick menu.
 5. Grant permissions when asked (System Settings → Privacy & Security):
    - **Accessibility** — Clipboard paste-on-Return and the Windows module (Maximize, move between displays).
    The Settings → 권한 page shows what is missing.
