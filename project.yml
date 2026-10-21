@@ -26,6 +26,8 @@ packages:
     path: Packages/ModWindows
   ModCable:
     path: Packages/ModCable
+  ModDictionary:
+    path: Packages/ModDictionary
   ModMouse:
     path: Packages/ModMouse
 
@@ -49,6 +51,7 @@ targets:
       - package: ModWindows
       - package: ModCable
       - package: ModMouse
+      - package: ModDictionary
       - target: AwakeGuard
         embed: true
         codeSign: true

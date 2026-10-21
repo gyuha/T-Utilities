@@ -2,6 +2,7 @@ import ModAwake
 import ModCable
 import ModClipboard
 import ModClock
+import ModDictionary
 import ModMouse
 import ModWindows
 import TUCore
@@ -16,5 +17,6 @@ enum AppModules {
         ClockModule.self,
         WindowsModule.self,
         MouseModule.self,
+        DictionaryModule.self,
     ]
 }
