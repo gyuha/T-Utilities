@@ -177,6 +177,7 @@ scroll transforms and Logitech HID++ battery reading were adapted (rewritten in 
 
 - eclam (MIT, https://github.com/jadhvank/eclam) — agent-activity detection approach.
 - Amphetamine Enhancer (MIT, https://github.com/x74353/Amphetamine-Enhancer) — rootless closed-display approach.
+- easy-move-resize (MIT, © Daniel Marcotte, https://github.com/dmarcotte/easy-move-resize) — modifier + drag to move/resize a window from anywhere inside it. Idea only; the code is a fresh implementation.
 
 ## KeyboardShortcuts (dependency)
 

@@ -5,3 +5,5 @@ DerivedData/
 *.xcodeproj/
 xcuserdata/
 .swiftpm/
+.forge
+.task
