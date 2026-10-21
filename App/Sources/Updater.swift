@@ -78,6 +78,23 @@ final class Updater {
         }
     }
 
+    /// Popover entry point: asks first, since installing quits and relaunches the app.
+    func confirmAndInstall() {
+        guard let release = availableRelease else { return }
+        NSApp.activate()
+        let alert = NSAlert()
+        alert.messageText = "T-Utilities v\(release.version)으로 업데이트할까요?"
+        alert.informativeText = "현재 버전은 \(currentVersion)입니다. 새 버전을 내려받아 설치한 뒤 앱을 다시 실행합니다."
+        alert.addButton(withTitle: "업데이트")
+        alert.addButton(withTitle: "나중에")
+        alert.addButton(withTitle: "릴리스 노트")
+        switch alert.runModal() {
+        case .alertFirstButtonReturn: install()
+        case .alertThirdButtonReturn: NSWorkspace.shared.open(release.pageURL)
+        default: break
+        }
+    }
+
     func install() {
         guard let release = availableRelease else { return }
         state = .installing(release)
@@ -87,7 +104,14 @@ final class Updater {
                 try Self.verify(newApp)
                 try Self.replaceAndRelaunch(with: newApp)
             } catch {
-                state = .failed(error.localizedDescription)
+                // Keep the update offered so the user can retry, and say why it failed (they asked for it).
+                state = .available(release)
+                NSApp.activate()
+                let alert = NSAlert()
+                alert.alertStyle = .warning
+                alert.messageText = "업데이트하지 못했습니다"
+                alert.informativeText = error.localizedDescription
+                alert.runModal()
             }
         }
     }

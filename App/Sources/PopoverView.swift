@@ -29,9 +29,20 @@ struct PopoverView: View {
                 Spacer()
                 switch updater.state {
                 case .available(let release):
-                    Button("업데이트 v\(release.version)", systemImage: "arrow.down.circle", action: updater.install)
-                        .buttonStyle(.borderless)
-                        .help("다운로드 후 설치하고 다시 실행합니다")
+                    Button(action: updater.confirmAndInstall) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.down.circle.fill")
+                            Text("New update")
+                            Text("v\(release.version)").monospacedDigit()
+                        }
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.black)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(.yellow, in: Capsule())
+                    }
+                    .buttonStyle(.plain)
+                    .help("새 버전으로 업데이트")
                 case .installing:
                     ProgressView().controlSize(.small)
                     Text("업데이트 설치 중…").font(.caption).foregroundStyle(.secondary)
