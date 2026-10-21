@@ -7,3 +7,4 @@ xcuserdata/
 .swiftpm/
 .forge
 .task
+.claude/worktrees/
