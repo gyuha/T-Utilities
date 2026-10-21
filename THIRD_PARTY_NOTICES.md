@@ -179,6 +179,7 @@ scroll transforms and Logitech HID++ battery reading were adapted (rewritten in 
 - Amphetamine Enhancer (MIT, https://github.com/x74353/Amphetamine-Enhancer) — rootless closed-display approach.
 - allkdic / 올ㅋ사전 (MIT, https://github.com/devxoul/allkdic) — idea of a hotkey-toggled Naver/Daum dictionary panel; no code copied.
 - easy-move-resize (MIT, © Daniel Marcotte, https://github.com/dmarcotte/easy-move-resize) — modifier + drag to move/resize a window from anywhere inside it. Idea only; the code is a fresh implementation.
+- Stats (MIT, © Serhiy Mytrovtsiy, https://github.com/exelban/stats) — idea of a menu bar CPU/memory/top-process view. Scope differs (on-demand sampling only); the code is a fresh implementation on public Darwin/Mach APIs.
 
 ## KeyboardShortcuts (dependency)
 

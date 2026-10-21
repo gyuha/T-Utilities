@@ -4,6 +4,7 @@ import ModClipboard
 import ModClock
 import ModDictionary
 import ModMouse
+import ModStats
 import ModWindows
 import TUCore
 
@@ -18,5 +19,6 @@ enum AppModules {
         WindowsModule.self,
         MouseModule.self,
         DictionaryModule.self,
+        StatsModule.self,
     ]
 }
