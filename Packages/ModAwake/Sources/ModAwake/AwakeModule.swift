@@ -77,7 +77,7 @@ public final class AwakeModule: TUModule {
 
     public func start() async throws {
         // A previous run may have died while lid-closed sleep was disabled (and its guard with it).
-        Clamshell.setSleepDisabled(false)
+        ClamshellMarker().recoverIfNeeded()
         loop = Task { [weak self] in
             while !Task.isCancelled {
                 await self?.tick()

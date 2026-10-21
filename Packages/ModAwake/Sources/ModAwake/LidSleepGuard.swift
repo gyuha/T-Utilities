@@ -2,6 +2,40 @@ import ClamshellKit
 import Foundation
 import IOKit.ps
 
+/// Records that this app disabled lid-closed sleep, so a later launch restores it only if a previous
+/// run died before doing so (an unconditional restore can make the system blank displays).
+struct ClamshellMarker {
+    static let key = "awakeClamshellSleepDisabled"
+
+    private let defaults: UserDefaults
+
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+    }
+
+    var isSet: Bool {
+        defaults.bool(forKey: Self.key)
+    }
+
+    func set() {
+        defaults.set(true, forKey: Self.key)
+    }
+
+    func clear() {
+        defaults.removeObject(forKey: Self.key)
+    }
+
+    /// Startup crash recovery: restores lid-closed sleep only if the marker is set, then clears it.
+    /// - Returns: whether a restore was attempted.
+    @discardableResult
+    func recoverIfNeeded(restore: () -> Bool = { Clamshell.setSleepDisabled(false) }) -> Bool {
+        guard isSet else { return false }
+        _ = restore()
+        clear()
+        return true
+    }
+}
+
 /// Keeps the Mac awake with the lid closed while active.
 ///
 /// The clamshell setting outlives this process, so a helper (`AwakeGuard`) is spawned with a heartbeat
@@ -12,6 +46,7 @@ final class LidSleepGuard {
     static let heartbeatInterval: Duration = .seconds(10)
 
     private let helperURL: URL?
+    private let marker = ClamshellMarker()
     private var helper: Process?
     private var heartbeatPipe: Pipe?
     private var heartbeat: Task<Void, Never>?
@@ -54,13 +89,14 @@ final class LidSleepGuard {
                 guard let pipe, (try? pipe.fileHandleForWriting.write(contentsOf: [0x2E])) != nil else { return }
             }
         }
+        marker.set()
         return Clamshell.setSleepDisabled(true)
     }
 
     /// Restores lid-closed sleep and lets the helper exit (EOF on its pipe).
     func deactivate() {
         if helper != nil || heartbeatPipe != nil {
-            Clamshell.setSleepDisabled(false)
+            if Clamshell.setSleepDisabled(false) { marker.clear() }
         }
         heartbeat?.cancel()
         heartbeat = nil
