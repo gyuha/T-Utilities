@@ -28,6 +28,8 @@ public final class AwakeModule: TUModule {
     private(set) var mode: AwakeMode
     /// End of the current manual session; nil = unlimited.
     private(set) var manualUntil: Date?
+    /// Length of the running timed manual session, for the draining menu bar icon.
+    private(set) var manualTotal: TimeInterval
     private(set) var activeAgents: [DetectedAgent] = []
     private(set) var lastAgentActivity: Date?
     private(set) var isHolding = false
@@ -64,6 +66,7 @@ public final class AwakeModule: TUModule {
         settings = context.settings
         mode = AwakeMode(rawValue: context.settings.value("mode", default: "off")) ?? .off
         manualUntil = context.settings.value("manualUntil", default: nil as Date?)
+        manualTotal = context.settings.value("manualTotal", default: 3 * 3600)
         let savedDuration: TimeInterval = context.settings.value("manualDuration", default: 3 * 3600)
         // Older versions also offered 8 hours.
         manualDuration = Self.manualDurations.contains(savedDuration) ? savedDuration : 3 * 3600
@@ -101,8 +104,10 @@ public final class AwakeModule: TUModule {
     func setMode(_ newMode: AwakeMode) {
         mode = newMode
         manualUntil = newMode == .manual && manualDuration > 0 ? Date().addingTimeInterval(manualDuration) : nil
+        manualTotal = manualDuration
         settings.set(mode.rawValue, for: "mode")
         settings.set(manualUntil, for: "manualUntil")
+        settings.set(manualTotal, for: "manualTotal")
         Task { await tick() }
     }
 
@@ -153,10 +158,23 @@ public final class AwakeModule: TUModule {
 
     /// 2×2 grid: off = all outlined, manual = top-left filled, auto = top row filled.
     public var statusItemImage: NSImage? {
+        GridIcon.image(Self.iconCells(mode: mode, remaining: manualUntil.map { $0.timeIntervalSince(now) }, total: manualTotal))
+    }
+
+    /// off: 4 empty · auto: 4 light · manual unlimited: 4 filled · timed manual: 3 filled (not bottom-right),
+    /// emptying bottom-left → top-right → top-left as each third of the time runs out.
+    nonisolated static func iconCells(mode: AwakeMode, remaining: TimeInterval?, total: TimeInterval) -> [GridIcon.Cell] {
         switch mode {
-        case .off: GridIcon.image()
-        case .manual: GridIcon.image(filled: [true, false, false, false])
-        case .auto: GridIcon.image(filled: [true, true, false, false])
+        case .off:
+            return [.empty, .empty, .empty, .empty]
+        case .auto:
+            return [.light, .light, .light, .light]
+        case .manual:
+            guard let remaining else { return [.filled, .filled, .filled, .filled] }
+            let fraction = total > 0 ? remaining / total : 0
+            if fraction > 2.0 / 3 { return [.filled, .filled, .filled, .empty] }
+            if fraction > 1.0 / 3 { return [.filled, .filled, .empty, .empty] }
+            return [.filled, .empty, .empty, .empty]
         }
     }
 

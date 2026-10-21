@@ -145,3 +145,21 @@ struct ClamshellMarkerTests {
         #expect(restoreCount == 1)
     }
 }
+
+struct AwakeIconTests {
+    let hour: TimeInterval = 3600
+
+    @Test func offAutoAndUnlimited() {
+        #expect(AwakeModule.iconCells(mode: .off, remaining: nil, total: hour) == [.empty, .empty, .empty, .empty])
+        #expect(AwakeModule.iconCells(mode: .auto, remaining: nil, total: hour) == [.light, .light, .light, .light])
+        #expect(AwakeModule.iconCells(mode: .manual, remaining: nil, total: 0) == [.filled, .filled, .filled, .filled])
+    }
+
+    @Test func timedManualDrainsBottomLeftThenTopRightThenTopLeft() {
+        let total = 3 * hour
+        #expect(AwakeModule.iconCells(mode: .manual, remaining: total, total: total) == [.filled, .filled, .filled, .empty])
+        #expect(AwakeModule.iconCells(mode: .manual, remaining: 2.5 * hour, total: total) == [.filled, .filled, .filled, .empty])
+        #expect(AwakeModule.iconCells(mode: .manual, remaining: 1.5 * hour, total: total) == [.filled, .filled, .empty, .empty])
+        #expect(AwakeModule.iconCells(mode: .manual, remaining: 0.5 * hour, total: total) == [.filled, .empty, .empty, .empty])
+    }
+}
