@@ -20,7 +20,7 @@ enum Paster {
         }
     }
 
-    private static func postCommandV() {
+    static func postCommandV() {
         let source = CGEventSource(stateID: .combinedSessionState)
         for keyDown in [true, false] {
             let event = CGEvent(keyboardEventSource: source, virtualKey: vKeyCode, keyDown: keyDown)

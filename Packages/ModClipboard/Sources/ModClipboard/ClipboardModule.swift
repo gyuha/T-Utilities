@@ -7,6 +7,7 @@ import TUCore
 
 extension KeyboardShortcuts.Name {
     static let clipboardToggle = Self("clipboard.toggle", initial: .init(.v, modifiers: [.command, .shift]))
+    static let clipboardPlainTextPaste = Self("clipboard.plainTextPaste", initial: .init(.v, modifiers: [.command, .shift, .option]))
 }
 
 /// Clipboard history: captures text/images, search, quick slots (⌘1~0), OCR, Quick Look.
@@ -78,7 +79,16 @@ public final class ClipboardModule: TUModule {
     }
 
     public var hotkeys: [HotkeyDefinition] {
-        [HotkeyDefinition(name: .clipboardToggle, title: "클립보드 열기/닫기") { [popover] in popover.toggle() }]
+        [
+            HotkeyDefinition(name: .clipboardToggle, title: "클립보드 열기/닫기") { [popover] in popover.toggle() },
+            HotkeyDefinition(name: .clipboardPlainTextPaste, title: "서식 없이 붙여넣기") { [weak self] in
+                guard Permission.accessibility.isGranted else {
+                    Permission.accessibility.request()
+                    return
+                }
+                PlainTextPaste.perform { self?.monitor?.suppressNextChange() }
+            }
+        ]
     }
 
     public func makePopoverSection() -> AnyView? {
