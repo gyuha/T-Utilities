@@ -36,9 +36,20 @@ public final class MouseModule: TUModule {
     @ObservationIgnored private var tapSupervisor: Task<Void, Never>?
     @ObservationIgnored private var reapplyTask: Task<Void, Never>?
     @ObservationIgnored private var isRefreshingBattery = false
+    @ObservationIgnored private var isStarted = false
 
     private(set) var batteries: [MouseBatteryInfo] = []
     private(set) var tapInstalled = false
+
+    /// Off skips HID++ entirely — no device access, no polling, nothing shown.
+    var showBattery: Bool {
+        didSet {
+            settings.set(showBattery, for: "showBattery")
+            guard showBattery != oldValue else { return }
+            if !showBattery { stopBattery() } else if isStarted { startBattery() }
+        }
+    }
+    var isBatteryMonitoring: Bool { batteryPoller != nil }
 
     var pointerEnabled: Bool {
         didSet { settings.set(pointerEnabled, for: "pointerEnabled"); applyPointer() }
@@ -65,6 +76,7 @@ public final class MouseModule: TUModule {
 
     public init(context: ModuleContext) {
         settings = context.settings
+        showBattery = context.settings.value("showBattery", default: true)
         pointerEnabled = context.settings.value("pointerEnabled", default: true)
         speed = context.settings.value("speed", default: Self.defaultSpeed)
         acceleration = context.settings.value("acceleration", default: Self.defaultAcceleration)
@@ -81,30 +93,21 @@ public final class MouseModule: TUModule {
         applyEventTapConfig()
         installEventTap()
 
-        battery.onChange = { [weak self] in self?.batteries = $0 }
-        battery.start()
-        batteryPoller = Task { [weak self] in
-            while !Task.isCancelled {
-                await self?.refreshBattery()
-                try? await Task.sleep(for: Self.batteryPollInterval)
-            }
-        }
+        isStarted = true
+        if showBattery { startBattery() }
     }
 
     public func stop() async {
-        batteryPoller?.cancel()
+        isStarted = false
         tapSupervisor?.cancel()
         reapplyTask?.cancel()
-        batteryPoller = nil
         tapSupervisor = nil
         reapplyTask = nil
         eventTap.uninstall()
         tapInstalled = false
         pointer.stopWatching()
         pointer.restore()
-        battery.onChange = nil
-        battery.stop()
-        batteries = []
+        stopBattery()
     }
 
     public var status: ModuleStatus {
@@ -176,8 +179,27 @@ public final class MouseModule: TUModule {
 
     // MARK: - Battery
 
+    func startBattery() {
+        battery.onChange = { [weak self] in self?.batteries = $0 }
+        battery.start()
+        batteryPoller = Task { [weak self] in
+            while !Task.isCancelled {
+                await self?.refreshBattery()
+                try? await Task.sleep(for: Self.batteryPollInterval)
+            }
+        }
+    }
+
+    func stopBattery() {
+        batteryPoller?.cancel()
+        batteryPoller = nil
+        battery.onChange = nil
+        battery.stop()
+        batteries = []
+    }
+
     func refreshBattery() async {
-        guard !isRefreshingBattery else { return }
+        guard isBatteryMonitoring, !isRefreshingBattery else { return }
         isRefreshingBattery = true
         defer { isRefreshingBattery = false }
         await battery.refresh()
@@ -186,7 +208,7 @@ public final class MouseModule: TUModule {
     // MARK: - Shell integration
 
     public func makePopoverSection() -> AnyView? {
-        AnyView(MouseSectionView(module: self))
+        showBattery ? AnyView(MouseSectionView(module: self)) : nil
     }
 
     public func makeSettingsView() -> AnyView {
@@ -238,20 +260,23 @@ private struct MouseSettingsView: View {
     var body: some View {
         Form {
             Section("배터리") {
-                if module.batteries.isEmpty {
-                    Text("Logitech HID++ 장치를 찾지 못했습니다 (마우스가 잠들어 있으면 움직인 뒤 새로 고침)")
-                        .foregroundStyle(.secondary)
-                }
-                ForEach(module.batteries) { info in
-                    LabeledContent(info.name) {
-                        HStack(spacing: 4) {
-                            Image(systemName: MouseModule.batterySymbol(info.reading))
-                                .foregroundStyle((info.reading.level ?? 100) <= 15 ? .red : .secondary)
-                            Text(info.reading.level.map { "\($0)%" } ?? "—").monospacedDigit()
+                Toggle("Logitech 마우스 배터리 표시", isOn: $module.showBattery)
+                if module.showBattery {
+                    if module.batteries.isEmpty {
+                        Text("Logitech HID++ 장치를 찾지 못했습니다 (마우스가 잠들어 있으면 움직인 뒤 새로 고침)")
+                            .foregroundStyle(.secondary)
+                    }
+                    ForEach(module.batteries) { info in
+                        LabeledContent(info.name) {
+                            HStack(spacing: 4) {
+                                Image(systemName: MouseModule.batterySymbol(info.reading))
+                                    .foregroundStyle((info.reading.level ?? 100) <= 15 ? .red : .secondary)
+                                Text(info.reading.level.map { "\($0)%" } ?? "—").monospacedDigit()
+                            }
                         }
                     }
+                    Button("새로 고침") { Task { await module.refreshBattery() } }
                 }
-                Button("새로 고침") { Task { await module.refreshBattery() } }
             }
 
             if !module.tapInstalled {
