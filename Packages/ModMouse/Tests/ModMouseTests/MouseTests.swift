@@ -1,4 +1,6 @@
+import Foundation
 import Testing
+import TUCore
 @testable import ModMouse
 
 struct PointerSpeedTests {
@@ -43,5 +45,53 @@ struct BatteryDecodeTests {
         #expect(MouseModule.shortName("G304 Lightspeed Wireless Gaming Mouse") == "G304")
         #expect(MouseModule.batterySymbol(.init(level: 90, chargeState: .discharging)) == "battery.100percent")
         #expect(MouseModule.batterySymbol(.init(level: 20, chargeState: .discharging)) == "battery.25percent")
+    }
+}
+
+@MainActor
+struct BatteryToggleTests {
+    static func makeModule(defaults: UserDefaults = UserDefaults(suiteName: "ModMouseTests.\(UUID().uuidString)")!) -> MouseModule {
+        MouseModule(context: ModuleContext(
+            settings: ModuleSettings(defaults: defaults, moduleID: "mouse"),
+            log: ModuleLog(category: "test"),
+            popover: PopoverControl()
+        ))
+    }
+
+    @Test func shownByDefault() {
+        let module = Self.makeModule()
+        #expect(module.showBattery)
+        #expect(module.makePopoverSection() != nil)
+    }
+
+    @Test func offIsPersisted() {
+        let defaults = UserDefaults(suiteName: "ModMouseTests.\(UUID().uuidString)")!
+        Self.makeModule(defaults: defaults).showBattery = false
+        #expect(defaults.object(forKey: "module.mouse.showBattery") as? Bool == false)
+        #expect(Self.makeModule(defaults: defaults).showBattery == false)
+    }
+
+    @Test func offHidesPopoverSection() {
+        let module = Self.makeModule()
+        module.showBattery = false
+        #expect(module.makePopoverSection() == nil)
+        module.showBattery = true
+        #expect(module.makePopoverSection() != nil)
+    }
+
+    @Test func turningOffStopsMonitoring() {
+        let module = Self.makeModule()
+        module.startBattery()
+        #expect(module.isBatteryMonitoring)
+        module.showBattery = false
+        #expect(!module.isBatteryMonitoring)
+        #expect(module.batteries.isEmpty)
+    }
+
+    @Test func turningOnBeforeStartDoesNotMonitor() {
+        let module = Self.makeModule()
+        module.showBattery = false
+        module.showBattery = true
+        #expect(!module.isBatteryMonitoring)
     }
 }
