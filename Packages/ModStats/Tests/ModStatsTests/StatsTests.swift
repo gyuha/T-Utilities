@@ -60,6 +60,37 @@ struct StatsMathTests {
         #expect(StatsMath.formatPercent(123.4) == "123%")
         #expect(StatsMath.summaryText(cpu: 12.3, memory: (19_551_000_000, 38_654_705_664)) == "CPU 12% · 메모리 18.2/36 GB")
         #expect(StatsMath.summaryText(cpu: nil, memory: nil) == "CPU …")
+        #expect(StatsMath.formatRate(0) == "0 B/s")
+        #expect(StatsMath.formatRate(340 * 1024) == "340 KB/s")
+        #expect(StatsMath.formatRate(1.5 * 1_048_576) == "1.5 MB/s")
+        #expect(StatsMath.networkText(NetworkRate(down: 1.5 * 1_048_576, up: 2048)) == "↓ 1.5 MB/s ↑ 2 KB/s")
+    }
+
+    @Test func counterDeltaHandlesWrapAndReset() {
+        #expect(StatsMath.counterDelta(from: 100, to: 600) == 500)
+        // 32-bit wrap: 4 GiB - 1000 -> 500 is 1500 bytes
+        #expect(StatsMath.counterDelta(from: (1 << 32) - 1000, to: 500) == 1500)
+        // Big drop that is not a plausible wrap = interface reset
+        #expect(StatsMath.counterDelta(from: 2_000_000_000, to: 10) == 0)
+    }
+
+    @Test func networkRateSumsInterfacesAndSkipsNewOnes() {
+        let previous = ["en0": NetworkCounters(received: 1000, sent: 500), "en1": NetworkCounters(received: 0, sent: 0)]
+        let current = [
+            "en0": NetworkCounters(received: 3000, sent: 700),
+            "en1": NetworkCounters(received: 1000, sent: 1000),
+            "utun3": NetworkCounters(received: 999_999, sent: 999_999), // appeared between samples
+        ]
+        let rate = StatsMath.networkRate(previous: previous, current: current, seconds: 2)
+        #expect(rate == NetworkRate(down: 1500, up: 600))
+        #expect(StatsMath.networkRate(previous: previous, current: current, seconds: 0) == nil)
+        #expect(StatsMath.networkRate(previous: previous, current: [:], seconds: 2) == nil)
+    }
+
+    @Test func fractionIsClamped() {
+        #expect(StatsMath.fraction(used: 50, total: 200) == 0.25)
+        #expect(StatsMath.fraction(used: 300, total: 200) == 1)
+        #expect(StatsMath.fraction(used: 1, total: 0) == 0)
     }
 }
 
@@ -67,8 +98,12 @@ struct StatsMathTests {
 struct LiveSampleTests {
     @Test func liveSnapshotIsSane() async throws {
         let start = ContinuousClock.now
-        let first = StatsSampler.takeSnapshot()
+        let first = StatsSampler.takeSnapshot(.init(processes: true, network: true, disk: true, gpu: true))
         print("STATS sample: \(ContinuousClock.now - start), processes: \(first.processes.count)")
+        print("STATS disk: \(String(describing: first.disk)), net: \(first.network), gpu: \(String(describing: first.gpuPercent))")
+        #expect(first.network.keys.contains("lo0") == false)
+        let disk = try #require(first.disk)
+        #expect(disk.total > 0 && disk.used <= disk.total)
         #expect(first.processes.count > 10)
         #expect(first.processes.contains { $0.pid == getpid() })
         #expect(first.memoryTotal >= 8 * 1_073_741_824)
@@ -77,7 +112,7 @@ struct LiveSampleTests {
         // Burn some CPU in this process so the two-sample math has something to see.
         let end = Date().addingTimeInterval(0.3)
         while Date() < end {}
-        let second = StatsSampler.takeSnapshot()
+        let second = StatsSampler.takeSnapshot(.init(processes: true))
         let cpu = try #require(CPUTicks.usage(from: first.ticks, to: second.ticks))
         #expect(cpu >= 0 && cpu <= 100)
         let usages = StatsMath.processUsage(

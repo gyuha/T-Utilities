@@ -120,6 +120,8 @@ public protocol TUModule: AnyObject, Observable {
 
     /// Called right before the main popover is shown.
     func popoverWillShow()
+    /// Called after the main popover has closed.
+    func popoverDidClose()
     /// Key events while the popover is shown, offered to modules in popover order.
     /// Return `true` to consume the event.
     func handlePopoverKeyDown(_ event: NSEvent) -> Bool
@@ -133,5 +135,6 @@ public extension TUModule {
     func makePopoverSection() -> AnyView? { nil }
     func makeQuickMenuItems() -> [NSMenuItem] { [] }
     func popoverWillShow() {}
+    func popoverDidClose() {}
     func handlePopoverKeyDown(_ event: NSEvent) -> Bool { false }
 }

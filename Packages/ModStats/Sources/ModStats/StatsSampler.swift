@@ -1,26 +1,41 @@
 import Darwin
 import Foundation
+import IOKit
 
 /// Reads system and per-process counters through public Darwin/Mach APIs. Stateless and thread-safe;
 /// listing every process takes a few tens of ms, so callers run it off the main thread.
 enum StatsSampler {
+    /// CPU and memory are always read; the rest only while the dashboard needs it.
+    struct Scope: Sendable {
+        var processes = false
+        var network = false
+        var disk = false
+        var gpu = false
+    }
+
     struct Snapshot: Sendable {
         var ticks: CPUTicks
         var processes: [ProcessSample]
         var memoryUsed: UInt64
         var memoryTotal: UInt64
+        var network: [String: NetworkCounters]
+        var disk: (used: UInt64, total: UInt64)?
+        var gpuPercent: Double?
         /// `CLOCK_UPTIME_RAW` at sampling time (same clock family as the mach times; excludes sleep).
         var wallNanoseconds: UInt64
     }
 
-    static func takeSnapshot() -> Snapshot {
+    static func takeSnapshot(_ scope: Scope = Scope()) -> Snapshot {
         let wall = clock_gettime_nsec_np(CLOCK_UPTIME_RAW)
         let memory = readMemory()
         return Snapshot(
             ticks: readCPUTicks() ?? CPUTicks(user: 0, system: 0, idle: 0, nice: 0),
-            processes: readProcesses(),
+            processes: scope.processes ? readProcesses() : [],
             memoryUsed: memory.used,
             memoryTotal: memory.total,
+            network: scope.network ? readNetwork() : [:],
+            disk: scope.disk ? readDisk() : nil,
+            gpuPercent: scope.gpu ? readGPUUtilization() : nil,
             wallNanoseconds: wall
         )
     }
@@ -68,6 +83,56 @@ enum StatsSampler {
         let app = internalPages &- min(UInt64(stats.purgeable_count), internalPages)
         let pages = app + UInt64(stats.wire_count) + UInt64(stats.compressor_page_count)
         return (min(pages * UInt64(pageSize), total), total)
+    }
+
+    /// Boot volume usage. "Available" includes purgeable space, like Finder and System Settings.
+    static func readDisk() -> (used: UInt64, total: UInt64)? {
+        let keys: Set<URLResourceKey> = [.volumeTotalCapacityKey, .volumeAvailableCapacityForImportantUsageKey]
+        guard let values = try? URL(fileURLWithPath: "/").resourceValues(forKeys: keys),
+              let total = values.volumeTotalCapacity, total > 0,
+              let available = values.volumeAvailableCapacityForImportantUsage else { return nil }
+        return (UInt64(max(Int64(total) - available, 0)), UInt64(total))
+    }
+
+    /// Byte counters of every non-loopback interface that is up, by interface name.
+    static func readNetwork() -> [String: NetworkCounters] {
+        var head: UnsafeMutablePointer<ifaddrs>?
+        guard getifaddrs(&head) == 0, let first = head else { return [:] }
+        defer { freeifaddrs(head) }
+        var result: [String: NetworkCounters] = [:]
+        for entry in sequence(first: first, next: { $0.pointee.ifa_next }) {
+            let interface = entry.pointee
+            guard let address = interface.ifa_addr, address.pointee.sa_family == UInt8(AF_LINK),
+                  interface.ifa_flags & UInt32(IFF_LOOPBACK) == 0, interface.ifa_flags & UInt32(IFF_UP) != 0,
+                  let data = interface.ifa_data else { continue }
+            let counters = data.assumingMemoryBound(to: if_data.self).pointee
+            result[String(cString: interface.ifa_name)] = NetworkCounters(
+                received: UInt64(counters.ifi_ibytes), sent: UInt64(counters.ifi_obytes)
+            )
+        }
+        return result
+    }
+
+    /// Not an official API: IOAccelerator's "PerformanceStatistics" dictionary. The key name is driver-specific and
+    /// may change between macOS versions; returns `nil` when it is missing. With several GPUs the busiest one wins.
+    static func readGPUUtilization() -> Double? {
+        var iterator: io_iterator_t = 0
+        guard IOServiceGetMatchingServices(kIOMainPortDefault, IOServiceMatching("IOAccelerator"), &iterator) == KERN_SUCCESS else {
+            return nil
+        }
+        defer { IOObjectRelease(iterator) }
+        var busiest: Double?
+        var service = IOIteratorNext(iterator)
+        while service != 0 {
+            let statistics = IORegistryEntryCreateCFProperty(service, "PerformanceStatistics" as CFString, kCFAllocatorDefault, 0)
+            if let dictionary = statistics?.takeRetainedValue() as? [String: Any],
+               let value = (dictionary["Device Utilization %"] as? NSNumber)?.doubleValue {
+                busiest = max(busiest ?? 0, min(value, 100))
+            }
+            IOObjectRelease(service)
+            service = IOIteratorNext(iterator)
+        }
+        return busiest
     }
 
     /// Every process whose rusage we may read. Other users' / root processes fail and are skipped silently.

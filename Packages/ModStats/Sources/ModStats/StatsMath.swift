@@ -52,7 +52,53 @@ struct ProcessUsage: Equatable, Sendable, Identifiable {
     var id: Int32 { pid }
 }
 
+/// Cumulative bytes of one network interface (`if_data` `ifi_ibytes`/`ifi_obytes`, 32-bit on macOS).
+struct NetworkCounters: Equatable, Sendable {
+    var received: UInt64
+    var sent: UInt64
+}
+
+/// Bytes per second.
+struct NetworkRate: Equatable, Sendable {
+    var down: Double
+    var up: Double
+}
+
 enum StatsMath {
+    /// Counters in `if_data` are 32-bit and wrap at 4 GiB.
+    static let counterModulus: UInt64 = 1 << 32
+    /// A decrease is treated as a wrap only if it implies at most this many bytes since the last sample;
+    /// anything larger is an interface reset (down/up), which counts as 0.
+    static let maxWrapDelta: UInt64 = 1 << 30
+
+    /// Bytes transferred between two readings of a 32-bit counter, tolerating wrap-around and resets.
+    static func counterDelta(from previous: UInt64, to current: UInt64) -> UInt64 {
+        if current >= previous { return current - previous }
+        guard previous <= counterModulus else { return 0 }
+        let wrapped = counterModulus - previous + current
+        return wrapped <= maxWrapDelta ? wrapped : 0
+    }
+
+    /// Total rate over all interfaces present in both samples. `nil` when no time elapsed or nothing was measured.
+    static func networkRate(
+        previous: [String: NetworkCounters], current: [String: NetworkCounters], seconds: Double
+    ) -> NetworkRate? {
+        guard seconds > 0, !current.isEmpty else { return nil }
+        var down: UInt64 = 0
+        var up: UInt64 = 0
+        for (name, now) in current {
+            guard let old = previous[name] else { continue }
+            down += counterDelta(from: old.received, to: now.received)
+            up += counterDelta(from: old.sent, to: now.sent)
+        }
+        return NetworkRate(down: Double(down) / seconds, up: Double(up) / seconds)
+    }
+
+    /// Used share of a capacity, 0...1. 0 when the total is unknown.
+    static func fraction(used: UInt64, total: UInt64) -> Double {
+        total > 0 ? min(Double(used) / Double(total), 1) : 0
+    }
+
     /// Per-process CPU% from two samples taken `wallNanoseconds` apart. Processes that did not exist in
     /// `previous` (or whose time went backwards, i.e. a recycled pid) get 0%.
     static func processUsage(
@@ -97,6 +143,19 @@ enum StatsMath {
 
     static func formatPercent(_ value: Double) -> String {
         value < 10 ? String(format: "%.1f%%", value) : String(format: "%.0f%%", value)
+    }
+
+    /// "0 B/s", "340 KB/s", "1.2 MB/s" (1024-based, like Activity Monitor).
+    static func formatRate(_ bytesPerSecond: Double) -> String {
+        let kb = bytesPerSecond / 1024
+        if kb < 1 { return String(format: "%.0f B/s", bytesPerSecond) }
+        if kb < 1000 { return String(format: "%.0f KB/s", kb) }
+        return String(format: "%.1f MB/s", kb / 1024)
+    }
+
+    /// "↓ 1.2 MB/s ↑ 340 KB/s"
+    static func networkText(_ rate: NetworkRate) -> String {
+        "↓ \(formatRate(rate.down)) ↑ \(formatRate(rate.up))"
     }
 
     /// Popover row text, e.g. "CPU 12% · 메모리 18.2/36 GB". CPU shows "…" until the second sample is in.
