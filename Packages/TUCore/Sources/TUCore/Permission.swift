@@ -5,11 +5,13 @@ import IOKit.hid
 public enum Permission: String, CaseIterable, Hashable, Sendable {
     case accessibility
     case inputMonitoring
+    case screenRecording
 
     public var displayName: String {
         switch self {
         case .accessibility: "손쉬운 사용"
         case .inputMonitoring: "입력 모니터링"
+        case .screenRecording: "화면 기록"
         }
     }
 
@@ -19,6 +21,7 @@ public enum Permission: String, CaseIterable, Hashable, Sendable {
         switch self {
         case .accessibility: AXIsProcessTrusted()
         case .inputMonitoring: IOHIDCheckAccess(kIOHIDRequestTypeListenEvent) == kIOHIDAccessTypeGranted
+        case .screenRecording: CGPreflightScreenCaptureAccess()
         }
     }
 
@@ -31,6 +34,8 @@ public enum Permission: String, CaseIterable, Hashable, Sendable {
             _ = AXIsProcessTrustedWithOptions(options)
         case .inputMonitoring:
             _ = IOHIDRequestAccess(kIOHIDRequestTypeListenEvent)
+        case .screenRecording:
+            _ = CGRequestScreenCaptureAccess()
         }
         NSWorkspace.shared.open(settingsURL)
     }
@@ -41,6 +46,8 @@ public enum Permission: String, CaseIterable, Hashable, Sendable {
             URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
         case .inputMonitoring:
             URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent")!
+        case .screenRecording:
+            URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture")!
         }
     }
 }

@@ -5,6 +5,7 @@ import ModClock
 import ModDictionary
 import ModMouse
 import ModStats
+import ModSwitcher
 import ModWindows
 import TUCore
 
@@ -20,5 +21,6 @@ enum AppModules {
         MouseModule.self,
         DictionaryModule.self,
         StatsModule.self,
+        SwitcherModule.self,
     ]
 }

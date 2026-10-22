@@ -15,6 +15,7 @@ Each module can be turned on/off and reordered in Settings; disabled modules are
 | Mouse | Pointer speed/acceleration, side buttons → Mission Control / Show Desktop, wheel reverse/linear, Logitech battery (HID++) | [LinearMouse](https://github.com/linearmouse/linearmouse) |
 | Dictionary | Global hotkey (⌥⌘Space) opens a small Naver / Daum dictionary panel (⌘1 / ⌘2 to switch); off by default | idea from [allkdic](https://github.com/devxoul/allkdic) |
 | Stats | CPU and memory at a glance, top processes by CPU/memory. Measured only when the popover opens (no background polling), off by default | idea from [Stats](https://github.com/exelban/stats) |
+| Switcher | Windows-style window switcher: hold ⌥ (or ⌘, replacing the macOS app switcher) and press Tab to pick a window from a thumbnail grid, including minimized ones. Thumbnails are captured only when it opens; off by default | design reference only: [alt-tab-macos](https://github.com/lwouis/alt-tab-macos) (GPL-3.0, no code used) |
 
 Install: `brew install --cask mordol/tap/t-utilities`, or see [INSTALL.md](INSTALL.md). Plan and design notes: [PLAN.md](PLAN.md).
 
