@@ -21,6 +21,7 @@ final class StatusItemController: NSObject {
 
         popover.behavior = .transient
         popover.animates = false
+        popover.delegate = self
         let hosting = NSHostingController(rootView: PopoverView(registry: registry, updater: updater) { [weak self] in
             self?.popover.performClose(nil)
             openSettings()
@@ -164,5 +165,13 @@ final class StatusItemController: NSObject {
 
     @objc private func menuOpenSettings() {
         openSettings()
+    }
+}
+
+extension StatusItemController: NSPopoverDelegate {
+    func popoverDidClose(_ notification: Notification) {
+        for module in registry.activePopoverModules {
+            module.popoverDidClose()
+        }
     }
 }
