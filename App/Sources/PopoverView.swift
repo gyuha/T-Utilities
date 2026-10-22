@@ -7,6 +7,9 @@ struct PopoverView: View {
     let updater: Updater
     let openSettings: () -> Void
 
+    @AppStorage(PopoverSize.widthKey) private var width = Double(PopoverSize.defaultWidth)
+    @AppStorage(PopoverSize.listHeightKey) private var listHeight = Double(PopoverSize.defaultListHeight)
+
     var body: some View {
         let sections = registry.popoverOrder.compactMap { registry.active[$0.id]?.makePopoverSection() }
 
@@ -50,9 +53,16 @@ struct PopoverView: View {
                     EmptyView()
                 }
             }
-            .padding(.horizontal, 12)
+            .padding(.leading, 12)
+            // Room for the resize grip, so it never covers the New update button.
+            .padding(.trailing, 28)
             .padding(.vertical, 8)
+            .overlay(alignment: .bottomTrailing) {
+                PopoverResizeGrip(width: $width, listHeight: $listHeight)
+                    .frame(width: 28, height: 28)
+                    .help("끌어서 창 크기 조절")
+            }
         }
-        .frame(width: 360)
+        .frame(width: width)
     }
 }

@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import TUCore
 
 /// Clipboard section of the main popover. Adapted from CopyNinja's MainPopoverView:
 /// section header / search / scrollable history / shortcut hints. The app-level header and footer
@@ -11,7 +12,7 @@ struct ClipboardSectionView: View {
 
     @FocusState private var searchFocused: Bool
 
-    static let listHeight: CGFloat = 380
+    @AppStorage(PopoverSize.listHeightKey) private var listHeight = Double(PopoverSize.defaultListHeight)
 
     var body: some View {
         VStack(spacing: 0) {
@@ -19,7 +20,7 @@ struct ClipboardSectionView: View {
             searchBar
             Divider()
             content
-                .frame(height: Self.listHeight)
+                .frame(height: listHeight)
             Divider()
             hints
         }
