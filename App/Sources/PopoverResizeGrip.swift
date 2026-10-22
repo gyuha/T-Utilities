@@ -13,7 +13,8 @@ struct PopoverResizeGrip: NSViewRepresentable {
         let view = GripView()
         view.onDrag = { start, mouse in
             width = (start.width + 2 * (mouse.x - start.mouse.x)).clamped(to: PopoverSize.widthRange)
-            listHeight = (start.listHeight + (start.mouse.y - mouse.y)).clamped(to: PopoverSize.listHeightRange)
+            listHeight = min(start.listHeight + (start.mouse.y - mouse.y), start.maxListHeight)
+                .clamped(to: PopoverSize.listHeightRange)
         }
         view.current = { (width, listHeight) }
         return view
@@ -21,10 +22,17 @@ struct PopoverResizeGrip: NSViewRepresentable {
 
     func updateNSView(_ view: GripView, context: Context) {}
 
+    struct DragStart {
+        let mouse: CGPoint
+        let width: Double
+        let listHeight: Double
+        let maxListHeight: Double
+    }
+
     final class GripView: NSView {
-        var onDrag: ((_ start: (mouse: CGPoint, width: Double, listHeight: Double), _ mouse: CGPoint) -> Void)?
+        var onDrag: ((_ start: DragStart, _ mouse: CGPoint) -> Void)?
         var current: (() -> (Double, Double))?
-        private var start: (mouse: CGPoint, width: Double, listHeight: Double)?
+        private var start: DragStart?
 
         override var mouseDownCanMoveWindow: Bool { false }
         override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
@@ -32,7 +40,12 @@ struct PopoverResizeGrip: NSViewRepresentable {
 
         override func mouseDown(with event: NSEvent) {
             let (width, listHeight) = current?() ?? (0, 0)
-            start = (NSEvent.mouseLocation, width, listHeight)
+            // The popover grows downward: stop at the bottom of the screen's usable area.
+            var maxListHeight = Double.infinity
+            if let window, let screen = window.screen {
+                maxListHeight = listHeight + Double(window.frame.minY - screen.visibleFrame.minY - 8)
+            }
+            start = DragStart(mouse: NSEvent.mouseLocation, width: width, listHeight: listHeight, maxListHeight: maxListHeight)
         }
 
         override func mouseDragged(with event: NSEvent) {

@@ -84,6 +84,17 @@ final class StatusItemController: NSObject {
         NSApp.activate()
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
         popover.contentViewController?.view.window?.makeKey()
+        fitListHeightToScreen()
+    }
+
+    /// A list height saved on a taller display can push the popover past the bottom of this one; shrink it to fit.
+    private func fitListHeightToScreen() {
+        guard let window = popover.contentViewController?.view.window, let screen = window.screen else { return }
+        let overflow = screen.visibleFrame.minY + 8 - window.frame.minY
+        guard overflow > 0 else { return }
+        let defaults = UserDefaults.standard
+        let current = defaults.object(forKey: PopoverSize.listHeightKey) as? Double ?? Double(PopoverSize.defaultListHeight)
+        defaults.set(max(Double(PopoverSize.listHeightRange.lowerBound), current - overflow), forKey: PopoverSize.listHeightKey)
     }
 
     /// While the popover is shown, key events go to modules in popover order; unhandled Esc closes it.

@@ -54,6 +54,8 @@ struct PopoverView: View {
                 }
             }
             .padding(.leading, 12)
+            // Room for the resize grip, so it never covers the New update button.
+            .padding(.trailing, 28)
             .padding(.vertical, 8)
             .overlay(alignment: .bottomTrailing) {
                 PopoverResizeGrip(width: $width, listHeight: $listHeight)

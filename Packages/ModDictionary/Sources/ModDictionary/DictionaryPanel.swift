@@ -106,9 +106,11 @@ final class DictionaryPanelController: NSObject, WKUIDelegate {
             forName: NSWindow.didEndLiveResizeNotification, object: panel, queue: .main
         ) { [weak panel] _ in
             MainActor.assumeIsolated {
-                guard let size = panel?.frame.size else { return }
-                UserDefaults.standard.set(size.width, forKey: Self.widthKey)
-                UserDefaults.standard.set(size.height, forKey: Self.heightKey)
+                guard let panel else { return }
+                UserDefaults.standard.set(panel.frame.size.width, forKey: Self.widthKey)
+                UserDefaults.standard.set(panel.frame.size.height, forKey: Self.heightKey)
+                // The edge grab took key away; take it back so Esc and the outside-click close keep working.
+                panel.makeKey()
             }
         }
 
