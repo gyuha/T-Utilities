@@ -12,6 +12,7 @@ final class StatusItemController: NSObject {
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let popover = NSPopover()
     private var keyDownMonitor: Any?
+    private var outsideClickMonitors: [Any] = []
 
     init(registry: ModuleRegistry, updater: Updater, popoverControl: PopoverControl, openSettings: @escaping () -> Void) {
         self.registry = registry
@@ -37,6 +38,7 @@ final class StatusItemController: NSObject {
         popoverControl.show = { [weak self] in self?.showPopover() }
         popoverControl.close = { [weak self] in self?.popover.performClose(nil) }
         installKeyDownMonitor()
+        installOutsideClickMonitors()
         observeAppearance()
     }
 
@@ -111,6 +113,32 @@ final class StatusItemController: NSObject {
                 return nil
             }
             return event
+        }
+    }
+
+    /// Closes the popover on a click outside it. `.transient` alone stops doing so after a module's
+    /// `NSMenu.popUp` (e.g. Stats) has run inside the popover, leaving only the status item to close it.
+    private func installOutsideClickMonitors() {
+        let mask: NSEvent.EventTypeMask = [.leftMouseDown, .rightMouseDown]
+        let closeIfOutside = { [weak self] in
+            guard let self, self.popover.isShown,
+                  let popoverFrame = self.popover.contentViewController?.view.window?.frame,
+                  let button = self.statusItem.button, let buttonWindow = button.window else { return }
+            let buttonFrame = buttonWindow.convertToScreen(button.convert(button.bounds, to: nil))
+            if PopoverDismissal.shouldClose(click: NSEvent.mouseLocation, popoverFrame: popoverFrame, statusButtonFrame: buttonFrame) {
+                self.popover.performClose(nil)
+            }
+        }
+        if let global = NSEvent.addGlobalMonitorForEvents(matching: mask, handler: { _ in
+            MainActor.assumeIsolated(closeIfOutside)
+        }) {
+            outsideClickMonitors.append(global)
+        }
+        if let local = NSEvent.addLocalMonitorForEvents(matching: mask, handler: { event in
+            closeIfOutside()
+            return event
+        }) {
+            outsideClickMonitors.append(local)
         }
     }
 
