@@ -25,6 +25,9 @@ final class Updater {
 
     static let latestReleaseAPI = URL(string: "https://api.github.com/repos/mordol/T-Utilities/releases/latest")!
     static let checkInterval: TimeInterval = 24 * 60 * 60
+    /// Requirement of the published builds (the release "T-Utilities Dev" certificate). Contributors who build with
+    /// their own `task cert` certificate fail the same-signature check below; this tells that case apart.
+    static let releaseRequirement = #"identifier "com.taegyu.tutilities" and certificate leaf = H"b71c81b5c84283db5a7b6630db751b5e6ebf474a""#
     private static let lastCheckKey = "updater.lastCheck"
 
     private(set) var state: State = .idle
@@ -111,7 +114,9 @@ final class Updater {
                 alert.alertStyle = .warning
                 alert.messageText = "업데이트하지 못했습니다"
                 alert.informativeText = error.localizedDescription
-                alert.runModal()
+                alert.addButton(withTitle: "확인")
+                alert.addButton(withTitle: "릴리스 페이지")
+                if alert.runModal() == .alertSecondButtonReturn { NSWorkspace.shared.open(release.pageURL) }
             }
         }
     }
@@ -170,8 +175,21 @@ final class Updater {
         else { throw UpdateError("서명 정보를 읽지 못했습니다") }
         let flags = SecCSFlags(rawValue: kSecCSCheckAllArchitectures | kSecCSStrictValidate | kSecCSCheckNestedCode)
         guard SecStaticCodeCheckValidity(staticCode, flags, requirement) == errSecSuccess else {
+            if !satisfies(selfCode, releaseRequirement) {
+                throw UpdateError("""
+                    지금 실행 중인 앱은 직접 빌드한 앱이라 서명이 릴리스 버전과 달라 자동으로 업데이트할 수 없습니다. \
+                    앱을 종료한 뒤 Homebrew(brew upgrade --cask t-utilities)나 릴리스 페이지에서 받은 앱으로 바꿔 주세요.
+                    """)
+            }
             throw UpdateError("새 버전의 서명이 현재 앱과 일치하지 않아 설치하지 않았습니다")
         }
+    }
+
+    nonisolated static func satisfies(_ code: SecStaticCode, _ requirementText: String) -> Bool {
+        var requirement: SecRequirement?
+        guard SecRequirementCreateWithString(requirementText as CFString, [], &requirement) == errSecSuccess,
+              let requirement else { return false }
+        return SecStaticCodeCheckValidity(code, [], requirement) == errSecSuccess
     }
 
     /// Swaps the bundle on disk, then a detached shell waits for this process to exit and opens the new app.
