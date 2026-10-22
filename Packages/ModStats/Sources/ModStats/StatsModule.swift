@@ -314,7 +314,7 @@ private struct StatsSettingsView: View {
                 Toggle("디스크", isOn: $module.showsDisk)
                 Toggle("네트워크", isOn: $module.showsNetwork)
                 Toggle("GPU", isOn: $module.showsGPU)
-                Text("GPU 사용률은 공식 API가 아닌 IOKit 내부 값(IOAccelerator)을 읽으므로 macOS 업데이트 후 표시되지 않거나 부정확해질 수 있습니다. 네트워크는 루프백을 제외한 모든 인터페이스의 합계입니다.")
+                Text("GPU 사용률은 공식 API가 아닌 IOKit 내부 값(IOAccelerator)을 읽으므로 macOS 업데이트 후 표시되지 않거나 부정확해질 수 있습니다. 네트워크는 Wi-Fi·이더넷 등 실제 인터페이스의 합계이며, VPN 트래픽은 중복으로 세지 않습니다.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

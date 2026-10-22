@@ -94,7 +94,8 @@ enum StatsSampler {
         return (UInt64(max(Int64(total) - available, 0)), UInt64(total))
     }
 
-    /// Byte counters of every non-loopback interface that is up, by interface name.
+    /// Byte counters of physical interfaces (`en*`: Wi-Fi, Ethernet, USB/Thunderbolt adapters) that are up, by name.
+    /// VPN tunnels (`utun*`) and bridges carry the same traffic again, so counting them would double it.
     static func readNetwork() -> [String: NetworkCounters] {
         var head: UnsafeMutablePointer<ifaddrs>?
         guard getifaddrs(&head) == 0, let first = head else { return [:] }
@@ -103,7 +104,7 @@ enum StatsSampler {
         for entry in sequence(first: first, next: { $0.pointee.ifa_next }) {
             let interface = entry.pointee
             guard let address = interface.ifa_addr, address.pointee.sa_family == UInt8(AF_LINK),
-                  interface.ifa_flags & UInt32(IFF_LOOPBACK) == 0, interface.ifa_flags & UInt32(IFF_UP) != 0,
+                  String(cString: interface.ifa_name).hasPrefix("en"), interface.ifa_flags & UInt32(IFF_UP) != 0,
                   let data = interface.ifa_data else { continue }
             let counters = data.assumingMemoryBound(to: if_data.self).pointee
             result[String(cString: interface.ifa_name)] = NetworkCounters(
