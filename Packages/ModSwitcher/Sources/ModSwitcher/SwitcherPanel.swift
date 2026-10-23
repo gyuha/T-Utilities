@@ -14,11 +14,17 @@ private enum Metrics {
 @MainActor
 @Observable
 final class SwitcherModel {
-    let windows: [SwitcherWindow]
+    var windows: [SwitcherWindow]
     let columns: Int
+    /// Index into `windows`.
     var selected: Int
+    /// `SwitcherWindow.id` under the mouse; its cell shows the close button.
+    var hovered: Int?
     var thumbnails: [CGWindowID: NSImage] = [:]
+    /// The closures take `SwitcherWindow.id`.
     @ObservationIgnored var onClick: (Int) -> Void = { _ in }
+    @ObservationIgnored var onClose: (Int) -> Void = { _ in }
+    @ObservationIgnored var onHover: (Int, Bool) -> Void = { _, _ in }
 
     init(windows: [SwitcherWindow], columns: Int, selected: Int) {
         self.windows = windows
@@ -39,6 +45,8 @@ private final class SwitcherPanel: NSPanel {
 final class SwitcherPresenter {
     /// Thumbnails are captured only when this returns true.
     var capturesThumbnails: () -> Bool = { true }
+    /// Hovering a cell selects it (the trigger release then switches to it); otherwise only a click switches.
+    var selectsOnHover: () -> Bool = { false }
 
     private var panel: NSPanel?
     private var model: SwitcherModel?
@@ -55,6 +63,9 @@ final class SwitcherPresenter {
         case .move(let delta):
             guard let model else { return }
             model.selected = SwitcherLogic.moved(model.selected, by: delta, count: model.windows.count)
+        case .moveRow(let rows):
+            guard let model else { return }
+            model.selected = SwitcherLogic.movedRow(model.selected, by: rows, columns: model.columns, count: model.windows.count)
         case .cancel:
             close()
         case .commit:
@@ -71,10 +82,38 @@ final class SwitcherPresenter {
     }
 
     private func commit(_ index: Int? = nil) {
-        guard let model else { return }
+        guard let model, model.windows.indices.contains(index ?? model.selected) else { return }
         let target = model.windows[index ?? model.selected]
         close()
         SwitcherWindows.focus(target)
+    }
+
+    /// Closes the window through its close button and keeps the switcher open on the rest.
+    private func closeWindow(id: Int) {
+        guard let model, let index = model.windows.firstIndex(where: { $0.id == id }) else { return }
+        guard SwitcherWindows.close(model.windows[index]) else {
+            NSSound.beep()
+            return
+        }
+        model.windows.remove(at: index)
+        if model.hovered == id { model.hovered = nil }
+        guard !model.windows.isEmpty else {
+            close()
+            return
+        }
+        model.selected = SwitcherLogic.selection(model.selected, afterRemoving: index, newCount: model.windows.count)
+    }
+
+    private func hover(id: Int, inside: Bool) {
+        guard let model else { return }
+        guard inside else {
+            if model.hovered == id { model.hovered = nil }
+            return
+        }
+        model.hovered = id
+        if selectsOnHover(), let index = model.windows.firstIndex(where: { $0.id == id }) {
+            model.selected = index
+        }
     }
 
     private func open(backward: Bool) {
@@ -101,7 +140,12 @@ final class SwitcherPresenter {
             windows: windows, columns: columns,
             selected: SwitcherLogic.initialSelection(count: windows.count, backward: backward)
         )
-        model.onClick = { [weak self] in self?.commit($0) }
+        model.onClick = { [weak self, weak model] id in
+            guard let index = model?.windows.firstIndex(where: { $0.id == id }) else { return }
+            self?.commit(index)
+        }
+        model.onClose = { [weak self] in self?.closeWindow(id: $0) }
+        model.onHover = { [weak self] in self?.hover(id: $0, inside: $1) }
 
         let panel = SwitcherPanel(
             contentRect: NSRect(origin: .zero, size: size), styleMask: [.borderless, .nonactivatingPanel],
@@ -148,19 +192,24 @@ private struct SwitcherGridView: View {
                     columns: Array(repeating: GridItem(.fixed(Metrics.cellWidth), spacing: Metrics.spacing), count: model.columns),
                     spacing: Metrics.spacing
                 ) {
-                    ForEach(model.windows) { window in
+                    ForEach(Array(model.windows.enumerated()), id: \.element.id) { index, window in
                         SwitcherCell(
                             window: window, thumbnail: window.windowID.flatMap { model.thumbnails[$0] },
-                            isSelected: window.id == model.selected
+                            isSelected: index == model.selected,
+                            showsCloseButton: index == model.selected || window.id == model.hovered,
+                            onClose: { model.onClose(window.id) }
                         )
                         .id(window.id)
                         .onTapGesture { model.onClick(window.id) }
+                        .background(HoverTracker { model.onHover(window.id, $0) })
                     }
                 }
                 .padding(Metrics.padding)
             }
             .scrollBounceBehavior(.basedOnSize)
-            .onChange(of: model.selected) { _, selected in proxy.scrollTo(selected) }
+            .onChange(of: model.selected) { _, selected in
+                if model.windows.indices.contains(selected) { proxy.scrollTo(model.windows[selected].id) }
+            }
         }
         .frame(width: size.width, height: size.height)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
@@ -171,6 +220,8 @@ private struct SwitcherCell: View {
     let window: SwitcherWindow
     let thumbnail: NSImage?
     let isSelected: Bool
+    let showsCloseButton: Bool
+    let onClose: () -> Void
 
     var body: some View {
         VStack(spacing: 6) {
@@ -211,5 +262,50 @@ private struct SwitcherCell: View {
                 .strokeBorder(isSelected ? Color.accentColor : .clear, lineWidth: 2)
         }
         .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay(alignment: .topTrailing) {
+            if showsCloseButton {
+                Button(action: onClose) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title2)
+                        .symbolRenderingMode(.palette)
+                        .foregroundStyle(.white, .red.opacity(0.85))
+                }
+                .buttonStyle(.plain)
+                .help("창 닫기")
+                .padding(2)
+            }
+        }
+    }
+}
+
+/// Reports the mouse entering/leaving a cell. The panel never becomes key and the app is not active, so this
+/// uses an always-active tracking area. AppKit only reports "entered" once the mouse moves, so the cell that
+/// happens to be under the cursor when the switcher opens is not selected by itself.
+private struct HoverTracker: NSViewRepresentable {
+    let onChange: (Bool) -> Void
+
+    func makeNSView(context: Context) -> TrackingView {
+        let view = TrackingView()
+        view.onChange = onChange
+        return view
+    }
+
+    func updateNSView(_ view: TrackingView, context: Context) {
+        view.onChange = onChange
+    }
+
+    final class TrackingView: NSView {
+        var onChange: ((Bool) -> Void)?
+
+        override func updateTrackingAreas() {
+            super.updateTrackingAreas()
+            trackingAreas.forEach(removeTrackingArea)
+            addTrackingArea(NSTrackingArea(rect: .zero, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self))
+        }
+
+        override func mouseEntered(with event: NSEvent) { onChange?(true) }
+        override func mouseExited(with event: NSEvent) { onChange?(false) }
+        /// Clicks go to the SwiftUI cell above.
+        override func hitTest(_ point: NSPoint) -> NSView? { nil }
     }
 }

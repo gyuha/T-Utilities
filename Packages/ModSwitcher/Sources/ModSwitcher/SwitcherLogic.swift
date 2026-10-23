@@ -41,6 +41,8 @@ enum SwitcherCommand: Equatable, Sendable {
     /// Open the switcher, or move to the next/previous window when it is already open.
     case step(backward: Bool)
     case move(Int)
+    /// ↑/↓: one grid row up or down.
+    case moveRow(Int)
     case cancel
     /// The trigger modifier was released: focus the selected window.
     case commit
@@ -48,13 +50,15 @@ enum SwitcherCommand: Equatable, Sendable {
 
 /// Key codes the switcher cares about; everything else is `.other`.
 enum SwitcherKey: Equatable, Sendable {
-    case tab, left, right, escape, other
+    case tab, left, right, up, down, escape, other
 
     init(keyCode: Int64) {
         switch keyCode {
         case 48: self = .tab
         case 123: self = .left
         case 124: self = .right
+        case 125: self = .down
+        case 126: self = .up
         case 53: self = .escape
         default: self = .other
         }
@@ -108,6 +112,8 @@ struct SwitcherKeyMachine: Sendable {
                 return Decision(command: .step(backward: flags.contains(.maskShift)), swallow: true)
             case .left: return Decision(command: .move(-1), swallow: true)
             case .right: return Decision(command: .move(1), swallow: true)
+            case .up: return Decision(command: .moveRow(-1), swallow: true)
+            case .down: return Decision(command: .moveRow(1), swallow: true)
             case .escape:
                 isActive = false
                 return Decision(command: .cancel, swallow: true)
@@ -139,6 +145,19 @@ enum SwitcherLogic {
     static func moved(_ index: Int, by delta: Int, count: Int) -> Int {
         guard count > 0 else { return 0 }
         return ((index + delta) % count + count) % count
+    }
+
+    /// Moves a selection by whole grid rows; stays put when there is no cell in that direction.
+    static func movedRow(_ index: Int, by rows: Int, columns: Int, count: Int) -> Int {
+        let target = index + rows * columns
+        return (0..<count).contains(target) ? target : index
+    }
+
+    /// The selection after the window at `removed` left the list: it stays on the same window, or on the
+    /// neighbour that took the removed one's place.
+    static func selection(_ selected: Int, afterRemoving removed: Int, newCount: Int) -> Int {
+        guard newCount > 0 else { return 0 }
+        return min(selected > removed ? selected - 1 : selected, newCount - 1)
     }
 
     /// Forward starts on the previously used window (the second one), backward on the last one.

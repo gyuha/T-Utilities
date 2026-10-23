@@ -54,6 +54,8 @@ struct KeyMachineTests {
         _ = m.handle(.keyDown(.tab), flags: .maskAlternate)
         #expect(m.handle(.keyDown(.left), flags: .maskAlternate) == .init(command: .move(-1), swallow: true))
         #expect(m.handle(.keyDown(.right), flags: .maskAlternate) == .init(command: .move(1), swallow: true))
+        #expect(m.handle(.keyDown(.up), flags: .maskAlternate) == .init(command: .moveRow(-1), swallow: true))
+        #expect(m.handle(.keyDown(.down), flags: .maskAlternate) == .init(command: .moveRow(1), swallow: true))
         #expect(m.handle(.keyDown(.escape), flags: .maskAlternate) == .init(command: .cancel, swallow: true))
         #expect(!m.isActive)
         // The release after cancelling must not commit.
@@ -94,6 +96,8 @@ struct KeyMachineTests {
         #expect(SwitcherKey(keyCode: 48) == .tab)
         #expect(SwitcherKey(keyCode: 123) == .left)
         #expect(SwitcherKey(keyCode: 124) == .right)
+        #expect(SwitcherKey(keyCode: 125) == .down)
+        #expect(SwitcherKey(keyCode: 126) == .up)
         #expect(SwitcherKey(keyCode: 53) == .escape)
         #expect(SwitcherKey(keyCode: 0) == .other)
     }
@@ -106,6 +110,23 @@ struct SwitcherLogicTests {
         #expect(SwitcherLogic.moved(1, by: 1, count: 4) == 2)
         #expect(SwitcherLogic.moved(0, by: -9, count: 4) == 3)
         #expect(SwitcherLogic.moved(0, by: 1, count: 0) == 0)
+    }
+
+    @Test func rowMovesStayInsideTheGrid() {
+        // 3 columns, 7 windows: rows 0-2, 3-5, 6.
+        #expect(SwitcherLogic.movedRow(1, by: 1, columns: 3, count: 7) == 4)
+        #expect(SwitcherLogic.movedRow(4, by: -1, columns: 3, count: 7) == 1)
+        #expect(SwitcherLogic.movedRow(1, by: -1, columns: 3, count: 7) == 1)
+        #expect(SwitcherLogic.movedRow(4, by: 1, columns: 3, count: 7) == 4)
+        #expect(SwitcherLogic.movedRow(3, by: 1, columns: 3, count: 7) == 6)
+    }
+
+    @Test func selectionAfterRemovingAWindow() {
+        #expect(SwitcherLogic.selection(3, afterRemoving: 1, newCount: 4) == 2)
+        #expect(SwitcherLogic.selection(1, afterRemoving: 3, newCount: 4) == 1)
+        #expect(SwitcherLogic.selection(2, afterRemoving: 2, newCount: 4) == 2)
+        #expect(SwitcherLogic.selection(4, afterRemoving: 4, newCount: 4) == 3)
+        #expect(SwitcherLogic.selection(0, afterRemoving: 0, newCount: 0) == 0)
     }
 
     @Test func initialSelection() {

@@ -71,6 +71,15 @@ enum SwitcherWindows {
         NSRunningApplication(processIdentifier: window.pid)?.activate()
     }
 
+    /// Presses the window's close button, like clicking the red title bar button. An app that asks to save
+    /// first keeps the window open with its own dialog.
+    static func close(_ window: SwitcherWindow) -> Bool {
+        var value: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(window.element, kAXCloseButtonAttribute as CFString, &value) == .success,
+              let value, CFGetTypeID(value) == AXUIElementGetTypeID() else { return false }
+        return AXUIElementPerformAction(value as! AXUIElement, kAXPressAction as CFString) == .success
+    }
+
     /// On-screen normal-layer windows, front to back.
     private static func onScreenCandidates() -> [WindowCandidate] {
         let options: CGWindowListOption = [.optionOnScreenOnly, .excludeDesktopElements]
