@@ -40,6 +40,8 @@ public final class MouseModule: TUModule {
 
     private(set) var batteries: [MouseBatteryInfo] = []
     private(set) var tapInstalled = false
+    /// Mice the last pointer apply reached, for the settings diagnosis line.
+    private(set) var pointerDevices: [PointerTuner.DeviceStatus] = []
 
     /// Off skips HID++ entirely — no device access, no polling, nothing shown.
     var showBattery: Bool {
@@ -118,9 +120,10 @@ public final class MouseModule: TUModule {
 
     private func applyPointer() {
         if pointerEnabled {
-            pointer.apply(.init(speed: speed, acceleration: acceleration))
+            pointerDevices = pointer.apply(.init(speed: speed, acceleration: acceleration))
         } else {
             pointer.restore()
+            pointerDevices = []
         }
     }
 
@@ -306,6 +309,9 @@ private struct MouseSettingsView: View {
                     }
                 }
                 .disabled(!module.pointerEnabled)
+                if module.pointerEnabled {
+                    PointerDevicesRow(devices: module.pointerDevices)
+                }
                 Button("LinearMouse 값으로 되돌리기 (속도 0.08 · 가속 0.9)") {
                     module.speed = MouseModule.defaultSpeed
                     module.acceleration = MouseModule.defaultAcceleration
@@ -341,5 +347,27 @@ private struct MouseSettingsView: View {
 
         }
         .formStyle(.grouped)
+    }
+}
+
+/// Which mice the pointer settings reached, so "speed doesn't change" can be told apart from "no mouse found".
+private struct PointerDevicesRow: View {
+    let devices: [PointerTuner.DeviceStatus]
+
+    var body: some View {
+        if devices.isEmpty {
+            Label("감지된 마우스가 없습니다", systemImage: "exclamationmark.triangle.fill")
+                .foregroundStyle(.orange)
+        } else {
+            ForEach(devices) { device in
+                if device.applied {
+                    Label("적용 중: \(device.name)", systemImage: "checkmark.circle.fill")
+                        .foregroundStyle(.secondary)
+                } else {
+                    Label("적용 실패: \(device.name) — macOS가 값을 받아들이지 않았습니다", systemImage: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.orange)
+                }
+            }
+        }
     }
 }

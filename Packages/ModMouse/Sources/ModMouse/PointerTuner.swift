@@ -16,13 +16,23 @@ final class PointerTuner {
         var acceleration: Double
     }
 
+    /// What `apply` did to one device, shown in settings so "nothing changes" reports can be told apart.
+    struct DeviceStatus: Equatable, Identifiable {
+        let id: UInt64
+        let name: String
+        let applied: Bool
+    }
+
     private struct Original {
         let resolution: Double?
+        let accelerationKey: String
         let acceleration: Double?
     }
 
     static let resolutionKey = "HIDPointerResolution"
-    static let accelerationKey = "HIDMouseAcceleration"
+    nonisolated static let mouseAccelerationKey = "HIDMouseAcceleration"
+    nonisolated static let pointerAccelerationKey = "HIDPointerAcceleration"
+    nonisolated static let trackpadAccelerationKey = "HIDTrackpadAcceleration"
     static let accelerationTypeKey = "HIDPointerAccelerationType"
     /// Resolution macOS uses for mice when the property is absent.
     static let defaultResolution = 400.0
@@ -41,27 +51,42 @@ final class PointerTuner {
         return 1 / (speedRange.lowerBound + clamped * (speedRange.upperBound - speedRange.lowerBound))
     }
 
-    /// Applies to every mouse currently connected (trackpads use a different acceleration type and are skipped).
-    func apply(_ settings: Settings) {
-        for service in mouseServices() {
-            guard let id = IOHIDServiceClientGetRegistryID(service) as? UInt64 else { continue }
+    /// Which acceleration property a pointing device uses, like LinearMouse: the type it reports, else a guess.
+    /// Trackpads (nil) are left to the system.
+    nonisolated static func accelerationKey(reportedType: String?, hasPointerAcceleration: Bool) -> String? {
+        if let reportedType { return reportedType == trackpadAccelerationKey ? nil : reportedType }
+        return hasPointerAcceleration ? pointerAccelerationKey : mouseAccelerationKey
+    }
+
+    /// Applies to every mouse currently connected (trackpads are skipped) and reports what took effect.
+    @discardableResult
+    func apply(_ settings: Settings) -> [DeviceStatus] {
+        let resolution = Self.resolution(forSpeed: settings.speed).clamped(10, 1995)
+        return mouseServices().compactMap { service, accelerationKey in
+            guard let id = IOHIDServiceClientGetRegistryID(service) as? UInt64 else { return nil }
             if originals[id] == nil {
                 originals[id] = Original(
                     resolution: Self.fixed(service, Self.resolutionKey),
-                    acceleration: Self.fixed(service, Self.accelerationKey)
+                    accelerationKey: accelerationKey,
+                    acceleration: Self.fixed(service, accelerationKey)
                 )
             }
-            Self.setFixed(service, Self.resolutionKey, Self.resolution(forSpeed: settings.speed).clamped(10, 1995))
-            Self.setFixed(service, Self.accelerationKey, settings.acceleration.clamped(0, 40))
+            // Resolution takes effect when acceleration is written after it (LinearMouse does the same).
+            let wroteResolution = Self.setFixed(service, Self.resolutionKey, resolution)
+            let wroteAcceleration = Self.setFixed(service, accelerationKey, settings.acceleration.clamped(0, 40))
+            let readBack = Self.fixed(service, Self.resolutionKey)
+            let applied = wroteResolution && wroteAcceleration && (readBack.map { abs($0 - resolution) < 1 } ?? true)
+            let name = IOHIDServiceClientCopyProperty(service, "Product" as CFString) as? String ?? "마우스"
+            return DeviceStatus(id: id, name: name, applied: applied)
         }
     }
 
     func restore() {
-        for service in mouseServices() {
+        for (service, _) in mouseServices() {
             guard let id = IOHIDServiceClientGetRegistryID(service) as? UInt64, let original = originals[id] else { continue }
             Self.setFixed(service, Self.resolutionKey, original.resolution ?? Self.defaultResolution)
             if let acceleration = original.acceleration {
-                Self.setFixed(service, Self.accelerationKey, acceleration)
+                Self.setFixed(service, original.accelerationKey, acceleration)
             }
         }
         originals.removeAll()
@@ -99,11 +124,19 @@ final class PointerTuner {
         watcherContext = nil
     }
 
-    private func mouseServices() -> [IOHIDServiceClient] {
+    /// Mice and other pointers with the acceleration property each one uses. Matching only devices that report
+    /// `HIDMouseAcceleration` silently skipped mice that report another type or none (#23).
+    private func mouseServices() -> [(IOHIDServiceClient, String)] {
         let services = IOHIDEventSystemClientCopyServices(client) as? [IOHIDServiceClient] ?? []
-        return services.filter {
-            IOHIDServiceClientConformsTo($0, UInt32(kHIDPage_GenericDesktop), UInt32(kHIDUsage_GD_Mouse)) != 0
-                && (IOHIDServiceClientCopyProperty($0, Self.accelerationTypeKey as CFString) as? String) == Self.accelerationKey
+        return services.compactMap { service in
+            let page = UInt32(kHIDPage_GenericDesktop)
+            guard IOHIDServiceClientConformsTo(service, page, UInt32(kHIDUsage_GD_Mouse)) != 0
+                || IOHIDServiceClientConformsTo(service, page, UInt32(kHIDUsage_GD_Pointer)) != 0 else { return nil }
+            let key = Self.accelerationKey(
+                reportedType: IOHIDServiceClientCopyProperty(service, Self.accelerationTypeKey as CFString) as? String,
+                hasPointerAcceleration: Self.fixed(service, Self.pointerAccelerationKey) != nil
+            )
+            return key.map { (service, $0) }
         }
     }
 

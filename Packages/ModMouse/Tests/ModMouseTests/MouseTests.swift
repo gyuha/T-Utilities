@@ -10,6 +10,19 @@ struct PointerSpeedTests {
         // The user's LinearMouse speed 0.08.
         #expect(abs(PointerTuner.resolution(forSpeed: 0.08) - 361.45) < 0.01)
     }
+
+    @Test func accelerationKeyFollowsReportedType() {
+        #expect(PointerTuner.accelerationKey(reportedType: "HIDMouseAcceleration", hasPointerAcceleration: false) == "HIDMouseAcceleration")
+        #expect(PointerTuner.accelerationKey(reportedType: "HIDPointerAcceleration", hasPointerAcceleration: false) == "HIDPointerAcceleration")
+        // Trackpads are left to the system.
+        #expect(PointerTuner.accelerationKey(reportedType: "HIDTrackpadAcceleration", hasPointerAcceleration: true) == nil)
+    }
+
+    @Test func accelerationKeyIsGuessedWhenNotReported() {
+        // #23: these mice used to be skipped entirely.
+        #expect(PointerTuner.accelerationKey(reportedType: nil, hasPointerAcceleration: true) == "HIDPointerAcceleration")
+        #expect(PointerTuner.accelerationKey(reportedType: nil, hasPointerAcceleration: false) == "HIDMouseAcceleration")
+    }
 }
 
 struct ScrollTransformTests {
